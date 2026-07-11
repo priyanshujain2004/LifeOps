@@ -76,10 +76,7 @@ DROP POLICY IF EXISTS "Users can view own role or superadmins view all" ON publi
 CREATE POLICY "Users can view own role or superadmins view all"
   ON public.user_roles FOR SELECT
   USING (
-    auth.uid() = user_id 
-    OR EXISTS (
-      SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'superadmin'
-    )
+    auth.uid() = user_id OR public.is_superadmin()
   );
 
 -- Helper security definer function to check superadmin status reliably inside RLS

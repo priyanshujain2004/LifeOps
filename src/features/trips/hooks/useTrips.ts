@@ -31,14 +31,14 @@ export function useTrips() {
       const supabase = getSupabaseBrowserClient();
 
       // Fetch active/all locations
-      const { data: locsData } = await supabase
+      const { data: locsData, error: locsErr } = await supabase
         .from("locations")
         .select("*")
         .eq("user_id", targetUserId)
         .eq("active", true)
         .order("name", { ascending: true });
 
-      const resolvedLocs = (locsData && locsData.length > 0) ? locsData : (appMemoryCache.locations || DEFAULT_LOCATIONS);
+      const resolvedLocs = (!locsErr && locsData) ? locsData : (appMemoryCache.locations || []);
       setLocations(resolvedLocs);
       appMemoryCache.locations = resolvedLocs;
 

@@ -47,12 +47,12 @@ export function useTimeline(initialDate?: string) {
 
       // 1. Fetch activity types if not cached
       if (!appMemoryCache.activityTypes) {
-        const { data: typesData } = await supabase.from("activity_types").select("*").eq("user_id", targetUserId);
-        if (typesData && typesData.length > 0) {
+        const { data: typesData, error: typesErr } = await supabase.from("activity_types").select("*").eq("user_id", targetUserId);
+        if (!typesErr && typesData) {
           setActivityTypes(typesData);
           appMemoryCache.activityTypes = typesData;
         } else {
-          setActivityTypes(DEFAULT_ACTIVITY_TYPES);
+          setActivityTypes([]);
         }
       } else {
         setActivityTypes(appMemoryCache.activityTypes);

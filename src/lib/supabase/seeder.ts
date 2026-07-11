@@ -18,26 +18,32 @@ export async function ensureDatabaseSeeded(userId?: string) {
   try {
     const supabase = getSupabaseBrowserClient();
 
-    // 2. Check if activity_types exist for this user in DB
-    const { data: existingTypes, error: typesCheckErr } = await supabase
+    // 2. Check if this user already has a profile or role (meaning their account was created previously and DB trigger already ran)
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", userId)
+      .limit(1);
+
+    const { data: existingTypes } = await supabase
       .from("activity_types")
       .select("id")
       .eq("user_id", userId)
       .limit(1);
 
-    // 3. Check if locations exist for this user in DB
-    const { data: existingLocs, error: locsCheckErr } = await supabase
+    const { data: existingLocs } = await supabase
       .from("locations")
       .select("id")
       .eq("user_id", userId)
       .limit(1);
 
-    const hasAnyExistingData = 
-      (!typesCheckErr && existingTypes && existingTypes.length > 0) ||
-      (!locsCheckErr && existingLocs && existingLocs.length > 0);
+    const hasAccountOrData = 
+      (existingProfile && existingProfile.length > 0) ||
+      (existingTypes && existingTypes.length > 0) ||
+      (existingLocs && existingLocs.length > 0);
 
-    // If the user already has any data (or had data created by the DB trigger upon signup), mark seeded in localStorage and return
-    if (hasAnyExistingData) {
+    // If the user already exists or has any data, mark seeded in localStorage and NEVER re-insert defaults
+    if (hasAccountOrData) {
       if (typeof window !== "undefined") {
         localStorage.setItem(storageKey, "true");
       }

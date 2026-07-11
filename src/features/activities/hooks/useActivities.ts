@@ -43,7 +43,7 @@ export function useActivities() {
         .eq("active", true)
         .order("sort_order", { ascending: true });
 
-      const resolvedTypes = (!typesError && typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
+      const resolvedTypes = (!typesError && typesData) ? typesData : (appMemoryCache.activityTypes || []);
       setActivityTypes(resolvedTypes);
       appMemoryCache.activityTypes = resolvedTypes;
 

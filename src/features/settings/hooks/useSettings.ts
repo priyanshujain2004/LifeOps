@@ -36,24 +36,24 @@ export function useSettings() {
       const supabase = getSupabaseBrowserClient();
 
       // Fetch activity types
-      const { data: typesData } = await supabase
+      const { data: typesData, error: typesErr } = await supabase
         .from("activity_types")
         .select("*")
         .eq("user_id", targetUserId)
         .order("sort_order", { ascending: true });
 
-      const resolvedTypes = (typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
+      const resolvedTypes = (!typesErr && typesData) ? typesData : (appMemoryCache.activityTypes || []);
       setActivityTypes(resolvedTypes);
       appMemoryCache.activityTypes = resolvedTypes;
 
       // Fetch locations
-      const { data: locsData } = await supabase
+      const { data: locsData, error: locsErr } = await supabase
         .from("locations")
         .select("*")
         .eq("user_id", targetUserId)
         .order("name", { ascending: true });
 
-      const resolvedLocs = (locsData && locsData.length > 0) ? locsData : (appMemoryCache.locations || DEFAULT_LOCATIONS);
+      const resolvedLocs = (!locsErr && locsData) ? locsData : (appMemoryCache.locations || []);
       setLocations(resolvedLocs);
       appMemoryCache.locations = resolvedLocs;
       appMemoryCache.hasLoadedSettings = true;

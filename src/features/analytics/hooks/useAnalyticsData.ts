@@ -44,7 +44,7 @@ export function useAnalyticsData(days: number = 7) {
 
   const [logs, setLogs] = useState<ActivityLog[]>(appMemoryCache.todayLogs || []);
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
-    appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
+    appMemoryCache.activityTypes || []
   );
   const [trips, setTrips] = useState<TripRow[]>(appMemoryCache.trips || []);
   const [expenses, setExpenses] = useState<ExpenseRow[]>(appMemoryCache.expenses || []);
@@ -62,10 +62,10 @@ export function useAnalyticsData(days: number = 7) {
       const supabase = getSupabaseBrowserClient();
 
       // 1. Activity types
-      const { data: typesData } = await supabase.from("activity_types").select("*").eq("user_id", targetUserId);
-      const resolvedTypes = (typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
+      const { data: typesData, error: typesErr } = await supabase.from("activity_types").select("*").eq("user_id", targetUserId);
+      const resolvedTypes = (!typesErr && typesData) ? typesData : (appMemoryCache.activityTypes || []);
       setActivityTypes(resolvedTypes);
-      if (typesData && typesData.length > 0) appMemoryCache.activityTypes = typesData;
+      if (!typesErr && typesData) appMemoryCache.activityTypes = typesData;
 
       // Time window cutoff
       const cutoff = new Date();

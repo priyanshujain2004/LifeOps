@@ -18,6 +18,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<{ error: any }>;
   signUpWithEmail: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  refreshRole: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   signInWithEmail: async () => ({ error: null }),
   signUpWithEmail: async () => ({ error: null }),
   signOut: async () => {},
+  refreshRole: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -42,20 +44,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserRoleAndSeed = async (userId: string) => {
     const supabase = getSupabaseBrowserClient();
     try {
-      const { data: roleRow } = await supabase
+      const { data: roleRows, error: roleErr } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userId)
-        .single();
-      if (roleRow && roleRow.role === "superadmin") {
+        .eq("user_id", userId);
+
+      if (roleErr) {
+        console.error("Error querying user_roles:", roleErr);
+      }
+
+      if (roleRows && roleRows.some((r) => r.role === "superadmin")) {
         setRole("superadmin");
       } else {
         setRole("user");
       }
     } catch (err) {
+      console.error("Exception checking user role:", err);
       setRole("user");
     }
     await ensureDatabaseSeeded(userId);
+  };
+
+  const refreshRole = async () => {
+    if (user?.id) {
+      await fetchUserRoleAndSeed(user.id);
+    }
   };
 
   useEffect(() => {
@@ -163,7 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   if (loading && pathname !== "/login") {
     return (
-      <AuthContext.Provider value={{ user, session, role, loading, signInWithEmail, signUpWithEmail, signOut }}>
+      <AuthContext.Provider value={{ user, session, role, loading, signInWithEmail, signUpWithEmail, signOut, refreshRole }}>
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-white p-6 space-y-4">
           <div className="w-16 h-16 rounded-3xl bg-indigo-600/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center text-3xl font-bold animate-pulse shadow-2xl">
             ⚡
@@ -182,14 +195,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   if (!loading && !user && pathname !== "/login") {
     return (
-      <AuthContext.Provider value={{ user, session, role, loading, signInWithEmail, signUpWithEmail, signOut }}>
+      <AuthContext.Provider value={{ user, session, role, loading, signInWithEmail, signUpWithEmail, signOut, refreshRole }}>
         <div className="min-h-screen bg-slate-950" />
       </AuthContext.Provider>
     );
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, signInWithEmail, signUpWithEmail, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, loading, signInWithEmail, signUpWithEmail, signOut, refreshRole }}>
       {children}
     </AuthContext.Provider>
   );
