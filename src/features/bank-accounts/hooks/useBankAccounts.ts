@@ -5,10 +5,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { appMemoryCache } from "@/lib/cache";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth/AuthProvider";
-<<<<<<< HEAD
 import { useAppStore } from "@/store/useAppStore";
-=======
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
 import type { BankAccount, BankAccountInsert, BankAccountUpdate } from "@/features/bank-accounts/types";
 import { useExpenses } from "@/features/expenses/hooks/useExpenses";
 
@@ -20,23 +17,16 @@ export interface BankAccountSummary extends BankAccount {
 
 export function useBankAccounts() {
   const { user } = useAuth();
-<<<<<<< HEAD
   const { impersonatedUserId } = useAppStore();
   const targetUserId = impersonatedUserId || user?.id;
   const isReadOnly = Boolean(impersonatedUserId && impersonatedUserId !== user?.id);
 
-=======
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
   const { expenses } = useExpenses();
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>(appMemoryCache.bankAccounts || []);
   const [loading, setLoading] = useState<boolean>(!appMemoryCache.hasLoadedBankAccounts);
 
   const fetchBankAccounts = useCallback(async (force = false) => {
-<<<<<<< HEAD
     if (!targetUserId) {
-=======
-    if (!user) {
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
       setBankAccounts([]);
       setLoading(false);
       return;
@@ -50,28 +40,16 @@ export function useBankAccounts() {
 
     try {
       const supabase = getSupabaseBrowserClient();
-<<<<<<< HEAD
       // Query without requiring `active` column in SQL to prevent column not found (42703) errors on simpler schemas
       const { data, error } = await supabase
         .from("bank_accounts")
         .select("*")
         .eq("user_id", targetUserId)
-=======
-      const { data, error } = await supabase
-        .from("bank_accounts")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("active", true)
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
         .order("is_default", { ascending: false })
         .order("account_name", { ascending: true });
 
       if (error) {
-<<<<<<< HEAD
         // If table doesn't exist yet (42P01), fallback to empty
-=======
-        // If table doesn't exist yet, fallback to empty
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
         if (error.code === "42P01") {
           console.warn("bank_accounts table not yet created in Supabase. Run migration.");
           setBankAccounts([]);
@@ -81,30 +59,18 @@ export function useBankAccounts() {
         throw error;
       }
 
-<<<<<<< HEAD
       // Filter out soft-deleted accounts in memory safely (handles both rows with and without active column)
       const rows = (data || []).filter((r: any) => r.active !== false);
-=======
-      const rows = data || [];
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
       appMemoryCache.bankAccounts = rows;
       appMemoryCache.hasLoadedBankAccounts = true;
       setBankAccounts(rows);
     } catch (err: any) {
       console.error("[useBankAccounts] Error fetching accounts:", err);
-<<<<<<< HEAD
       toast.error("Failed to load bank accounts: " + (err?.message || "Unknown error"));
     } finally {
       setLoading(false);
     }
   }, [targetUserId]);
-=======
-      toast.error("Failed to load bank accounts");
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
 
   useEffect(() => {
     fetchBankAccounts();
@@ -140,22 +106,17 @@ export function useBankAccounts() {
   }, [bankAccounts, expenses]);
 
   const addBankAccount = async (payload: Omit<BankAccountInsert, "user_id">) => {
-<<<<<<< HEAD
     if (!targetUserId) return null;
     if (isReadOnly) {
       toast.error("SuperAdmin Impersonation is Read-Only. Cannot add bank account.");
       return null;
     }
 
-=======
-    if (!user) return null;
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
     const supabase = getSupabaseBrowserClient();
 
     try {
       // If setting default, unset old default first
       if (payload.is_default) {
-<<<<<<< HEAD
         await supabase.from("bank_accounts").update({ is_default: false }).eq("user_id", targetUserId);
       }
 
@@ -183,18 +144,6 @@ export function useBankAccounts() {
         }
         throw error;
       }
-=======
-        await supabase.from("bank_accounts").update({ is_default: false }).eq("user_id", user.id);
-      }
-
-      const insertPayload: BankAccountInsert = {
-        ...payload,
-        user_id: user.id,
-      };
-
-      const { data, error } = await supabase.from("bank_accounts").insert(insertPayload).select().single();
-      if (error) throw error;
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
 
       toast.success("Bank Account created!");
       await fetchBankAccounts(true);
@@ -207,32 +156,23 @@ export function useBankAccounts() {
   };
 
   const editBankAccount = async (id: string, updates: Partial<BankAccountUpdate>) => {
-<<<<<<< HEAD
     if (!targetUserId) return false;
     if (isReadOnly) {
       toast.error("SuperAdmin Impersonation is Read-Only. Cannot edit account.");
       return false;
     }
 
-=======
-    if (!user) return false;
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
     const supabase = getSupabaseBrowserClient();
 
     try {
       if (updates.is_default) {
-<<<<<<< HEAD
         await supabase.from("bank_accounts").update({ is_default: false }).eq("user_id", targetUserId);
-=======
-        await supabase.from("bank_accounts").update({ is_default: false }).eq("user_id", user.id);
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
       }
 
       const { error } = await supabase
         .from("bank_accounts")
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq("id", id)
-<<<<<<< HEAD
         .eq("user_id", targetUserId);
 
       if (error) {
@@ -249,11 +189,6 @@ export function useBankAccounts() {
         }
         throw error;
       }
-=======
-        .eq("user_id", user.id);
-
-      if (error) throw error;
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
 
       toast.success("Account updated successfully!");
       await fetchBankAccounts(true);
@@ -266,7 +201,6 @@ export function useBankAccounts() {
   };
 
   const deleteBankAccount = async (id: string) => {
-<<<<<<< HEAD
     if (!targetUserId) return false;
     if (isReadOnly) {
       toast.error("SuperAdmin Impersonation is Read-Only. Cannot delete account.");
@@ -283,15 +217,6 @@ export function useBankAccounts() {
         const softRes = await supabase.from("bank_accounts").update({ active: false }).eq("id", id).eq("user_id", targetUserId);
         if (softRes.error) throw error;
       }
-=======
-    if (!user) return false;
-    const supabase = getSupabaseBrowserClient();
-
-    try {
-      // Soft delete or hard delete
-      const { error } = await supabase.from("bank_accounts").update({ active: false }).eq("id", id).eq("user_id", user.id);
-      if (error) throw error;
->>>>>>> 0f0fbbf81582f2a0d14c0a28c58a5763ec1c7ef8
 
       toast.success("Account deleted");
       await fetchBankAccounts(true);
