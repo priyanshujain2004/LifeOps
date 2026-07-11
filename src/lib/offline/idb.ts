@@ -20,6 +20,12 @@ export interface PendingExpense {
   description?: string | null;
   reimbursable: boolean;
   receipt_url?: string | null;
+  bank_account_id?: string | null;
+  reimbursed_status?: 'PENDING' | 'REIMBURSED' | 'REJECTED' | 'NOT_APPLICABLE';
+  reimbursed_amount?: number | null;
+  reimbursed_to_account_id?: string | null;
+  reimbursed_at?: string | null;
+  reimbursed_notes?: string | null;
   logged_at: string;
   created_at: string;
 }

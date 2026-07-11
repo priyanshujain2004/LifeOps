@@ -4,7 +4,9 @@ import React, { useState, Suspense } from "react";
 import { useExpenses } from "@/features/expenses/hooks/useExpenses";
 import { AddExpenseModal } from "@/features/expenses/components/AddExpenseModal";
 import { ExpenseList } from "@/features/expenses/components/ExpenseList";
-import { DollarSign, Plus, CheckCircle2, AlertCircle, PieChart } from "lucide-react";
+import { BankAccountManager } from "@/features/bank-accounts/components/BankAccountManager";
+import { ModalPortal } from "@/components/ui/ModalPortal";
+import { DollarSign, Plus, CheckCircle2, AlertCircle, PieChart, Landmark, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 function ExpensesContent() {
@@ -14,6 +16,7 @@ function ExpensesContent() {
 
   const { expenses, trips, loading, monthlySummary, addExpense, editExpense, deleteExpense } = useExpenses();
   const [isAddModalOpen, setIsAddModalOpen] = useState(!!defaultTripId);
+  const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [filter, setFilter] = useState<"ALL" | "REIMBURSABLE" | "PERSONAL">("ALL");
 
   const filteredExpenses = expenses.filter((e) => {
@@ -76,13 +79,23 @@ function ExpensesContent() {
             </span>
           </div>
 
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="w-full sm:w-auto px-5 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-transform active:scale-95 flex items-center justify-center gap-1.5 self-stretch"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Expense</span>
-          </button>
+          <div className="flex flex-col gap-2 w-full sm:w-auto self-stretch justify-center">
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-transform active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Expense</span>
+            </button>
+            
+            <button
+              onClick={() => setIsBankModalOpen(true)}
+              className="px-4 py-2.5 rounded-2xl bg-indigo-600/10 hover:bg-indigo-600/20 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-300 dark:border-indigo-500/30 transition-all flex items-center justify-center gap-1.5"
+            >
+              <Landmark className="w-3.5 h-3.5" />
+              <span>Bank Accounts</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -136,6 +149,24 @@ function ExpensesContent() {
         defaultReimbursable={defaultReimb}
         onAddExpense={addExpense}
       />
+
+      {/* Bank Account / Wallets Manager Modal */}
+      {isBankModalOpen && (
+        <ModalPortal isOpen={isBankModalOpen} onClose={() => setIsBankModalOpen(false)}>
+          <div className="relative max-w-4xl w-full rounded-3xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 mb-4">
+              <h3 className="font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                <Landmark className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <span>Financial Accounts & Wallets</span>
+              </h3>
+              <button onClick={() => setIsBankModalOpen(false)} className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <BankAccountManager />
+          </div>
+        </ModalPortal>
+      )}
     </div>
   );
 }

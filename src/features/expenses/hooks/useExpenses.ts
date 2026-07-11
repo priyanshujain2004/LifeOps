@@ -112,7 +112,12 @@ export function useExpenses() {
     reimbursable: boolean,
     tripId?: string | null,
     activityLogId?: string | null,
-    receiptFile?: File | null
+    receiptFile?: File | null,
+    bankAccountId?: string | null,
+    reimbursedStatus?: 'PENDING' | 'REIMBURSED' | 'REJECTED' | 'NOT_APPLICABLE',
+    reimbursedAmount?: number | null,
+    reimbursedToAccountId?: string | null,
+    reimbursedNotes?: string | null
   ) => {
     if (isReadOnly) {
       toast.error("SuperAdmin Impersonation is Read-Only. Cannot add expenses.");
@@ -144,6 +149,10 @@ export function useExpenses() {
       }
     }
 
+    const finalReimbursedStatus = reimbursable 
+      ? (reimbursedStatus || 'PENDING') 
+      : 'NOT_APPLICABLE';
+
     const newExpense: ExpenseRow = {
       id: tempId,
       user_id: user.id,
@@ -154,6 +163,12 @@ export function useExpenses() {
       trip_id: tripId || null,
       activity_log_id: activityLogId || null,
       receipt_url: receiptUrl,
+      bank_account_id: bankAccountId || null,
+      reimbursed_status: finalReimbursedStatus,
+      reimbursed_amount: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedAmount !== null && reimbursedAmount !== undefined ? reimbursedAmount : amount) : null,
+      reimbursed_to_account_id: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedToAccountId || null) : null,
+      reimbursed_at: finalReimbursedStatus === 'REIMBURSED' ? nowIso : null,
+      reimbursed_notes: reimbursedNotes || null,
       logged_at: nowIso,
       created_at: nowIso,
     };
@@ -176,6 +191,12 @@ export function useExpenses() {
         trip_id: tripId || null,
         activity_log_id: activityLogId || null,
         receipt_url: receiptUrl,
+        bank_account_id: bankAccountId || null,
+        reimbursed_status: finalReimbursedStatus,
+        reimbursed_amount: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedAmount !== null && reimbursedAmount !== undefined ? reimbursedAmount : amount) : null,
+        reimbursed_to_account_id: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedToAccountId || null) : null,
+        reimbursed_at: finalReimbursedStatus === 'REIMBURSED' ? nowIso : null,
+        reimbursed_notes: reimbursedNotes || null,
         logged_at: nowIso,
         created_at: nowIso,
       });
@@ -194,6 +215,12 @@ export function useExpenses() {
             trip_id: tripId || null,
             activity_log_id: activityLogId || null,
             receipt_url: receiptUrl,
+            bank_account_id: bankAccountId || null,
+            reimbursed_status: finalReimbursedStatus,
+            reimbursed_amount: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedAmount !== null && reimbursedAmount !== undefined ? reimbursedAmount : amount) : null,
+            reimbursed_to_account_id: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedToAccountId || null) : null,
+            reimbursed_at: finalReimbursedStatus === 'REIMBURSED' ? nowIso : null,
+            reimbursed_notes: reimbursedNotes || null,
             logged_at: nowIso,
           })
           .select()
@@ -218,12 +245,21 @@ export function useExpenses() {
     amount: number,
     description: string,
     reimbursable: boolean,
-    tripId?: string | null
+    tripId?: string | null,
+    bankAccountId?: string | null,
+    reimbursedStatus?: 'PENDING' | 'REIMBURSED' | 'REJECTED' | 'NOT_APPLICABLE',
+    reimbursedAmount?: number | null,
+    reimbursedToAccountId?: string | null,
+    reimbursedNotes?: string | null
   ) => {
     if (isReadOnly) {
       toast.error("SuperAdmin Impersonation is Read-Only. Cannot edit expenses.");
       return;
     }
+    const finalReimbursedStatus = reimbursable 
+      ? (reimbursedStatus || 'PENDING') 
+      : 'NOT_APPLICABLE';
+
     setExpenses((prev) => {
       const next = prev.map((e) =>
         e.id === id
@@ -234,6 +270,12 @@ export function useExpenses() {
               description: description || null,
               reimbursable,
               trip_id: tripId || null,
+              bank_account_id: bankAccountId || null,
+              reimbursed_status: finalReimbursedStatus,
+              reimbursed_amount: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedAmount !== null && reimbursedAmount !== undefined ? reimbursedAmount : amount) : null,
+              reimbursed_to_account_id: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedToAccountId || null) : null,
+              reimbursed_at: finalReimbursedStatus === 'REIMBURSED' ? new Date().toISOString() : null,
+              reimbursed_notes: reimbursedNotes || null,
             }
           : e
       );
@@ -252,6 +294,12 @@ export function useExpenses() {
           description: description || null,
           reimbursable,
           trip_id: tripId || null,
+          bank_account_id: bankAccountId || null,
+          reimbursed_status: finalReimbursedStatus,
+          reimbursed_amount: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedAmount !== null && reimbursedAmount !== undefined ? reimbursedAmount : amount) : null,
+          reimbursed_to_account_id: finalReimbursedStatus === 'REIMBURSED' ? (reimbursedToAccountId || null) : null,
+          reimbursed_at: finalReimbursedStatus === 'REIMBURSED' ? new Date().toISOString() : null,
+          reimbursed_notes: reimbursedNotes || null,
         })
         .eq("id", id);
     } catch (err) {
