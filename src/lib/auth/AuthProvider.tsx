@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const fetchUserRoleAndSeed = async (userId: string) => {
+  const fetchUserRoleAndSeed = async (userId: string, isManualRefresh = false) => {
     const supabase = getSupabaseBrowserClient();
     try {
       const { data: roleRows, error: roleErr } = await supabase
@@ -51,15 +51,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (roleErr) {
         console.error("Error querying user_roles:", roleErr);
+        if (isManualRefresh) {
+          toast.error(`RLS / Database error on user_roles: ${roleErr.message}`);
+        }
       }
 
       if (roleRows && roleRows.some((r) => r.role === "superadmin")) {
         setRole("superadmin");
+        if (isManualRefresh) toast.success("Verified: SuperAdmin access active!");
       } else {
         setRole("user");
+        if (isManualRefresh && !roleErr) toast.info("Verified: access level is standard User.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Exception checking user role:", err);
+      if (isManualRefresh) toast.error(`Exception checking access level: ${err?.message || err}`);
       setRole("user");
     }
     await ensureDatabaseSeeded(userId);
@@ -67,7 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshRole = async () => {
     if (user?.id) {
-      await fetchUserRoleAndSeed(user.id);
+      toast.info("Re-verifying access level with Supabase...");
+      await fetchUserRoleAndSeed(user.id, true);
+    } else {
+      toast.error("No active user session found to verify.");
     }
   };
 
