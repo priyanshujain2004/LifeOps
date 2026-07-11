@@ -215,6 +215,12 @@ export interface Database {
           description: string | null;
           reimbursable: boolean;
           receipt_url: string | null;
+          bank_account_id?: string | null;
+          reimbursed_status?: 'PENDING' | 'REIMBURSED' | 'REJECTED' | 'NOT_APPLICABLE';
+          reimbursed_amount?: number | null;
+          reimbursed_to_account_id?: string | null;
+          reimbursed_at?: string | null;
+          reimbursed_notes?: string | null;
           logged_at: string;
           created_at: string;
         };
@@ -228,6 +234,12 @@ export interface Database {
           description?: string | null;
           reimbursable?: boolean;
           receipt_url?: string | null;
+          bank_account_id?: string | null;
+          reimbursed_status?: 'PENDING' | 'REIMBURSED' | 'REJECTED' | 'NOT_APPLICABLE';
+          reimbursed_amount?: number | null;
+          reimbursed_to_account_id?: string | null;
+          reimbursed_at?: string | null;
+          reimbursed_notes?: string | null;
           logged_at?: string;
           created_at?: string;
         };
@@ -241,6 +253,12 @@ export interface Database {
           description?: string | null;
           reimbursable?: boolean;
           receipt_url?: string | null;
+          bank_account_id?: string | null;
+          reimbursed_status?: 'PENDING' | 'REIMBURSED' | 'REJECTED' | 'NOT_APPLICABLE';
+          reimbursed_amount?: number | null;
+          reimbursed_to_account_id?: string | null;
+          reimbursed_at?: string | null;
+          reimbursed_notes?: string | null;
           logged_at?: string;
           created_at?: string;
         };
@@ -260,6 +278,45 @@ export interface Database {
             referencedColumns: ["id"];
           }
         ];
+      };
+      bank_accounts: {
+        Row: {
+          id: string;
+          user_id: string;
+          account_name: string;
+          account_type: 'SAVINGS' | 'CURRENT' | 'CREDIT_CARD' | 'WALLET' | 'CASH';
+          account_number: string | null;
+          initial_balance: number;
+          is_default: boolean;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          account_name: string;
+          account_type: 'SAVINGS' | 'CURRENT' | 'CREDIT_CARD' | 'WALLET' | 'CASH';
+          account_number?: string | null;
+          initial_balance?: number;
+          is_default?: boolean;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          account_name?: string;
+          account_type?: 'SAVINGS' | 'CURRENT' | 'CREDIT_CARD' | 'WALLET' | 'CASH';
+          account_number?: string | null;
+          initial_balance?: number;
+          is_default?: boolean;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       user_roles: {
         Row: {

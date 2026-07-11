@@ -4,8 +4,9 @@ import React, { useState, useEffect } from "react";
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from "../types";
 import type { TripRow } from "@/features/trips/types";
 import { useAppStore } from "@/store/useAppStore";
-import { DollarSign, Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { DollarSign, Upload, X, CheckCircle2, AlertCircle, Landmark, Wallet, ArrowUpRight } from "lucide-react";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { useBankAccounts } from "@/features/bank-accounts/hooks/useBankAccounts";
 
 interface AddExpenseModalProps {
   isOpen: boolean;
@@ -20,7 +21,12 @@ interface AddExpenseModalProps {
     reimbursable: boolean,
     tripId?: string | null,
     activityLogId?: string | null,
-    receiptFile?: File | null
+    receiptFile?: File | null,
+    bankAccountId?: string | null,
+    reimbursedStatus?: 'PENDING' | 'REIMBURSED' | 'REJECTED' | 'NOT_APPLICABLE',
+    reimbursedAmount?: number | null,
+    reimbursedToAccountId?: string | null,
+    reimbursedNotes?: string | null
   ) => void;
 }
 
@@ -33,6 +39,8 @@ export function AddExpenseModal({
   onAddExpense,
 }: AddExpenseModalProps) {
   const { activeTrip } = useAppStore();
+  const { bankAccounts } = useBankAccounts();
+
   const [category, setCategory] = useState<ExpenseCategory>("TRAVEL");
   const [amountStr, setAmountStr] = useState<string>("");
   const [description, setDescription] = useState("");
@@ -40,6 +48,13 @@ export function AddExpenseModal({
   const [selectedTripId, setSelectedTripId] = useState<string>(defaultTripId || "");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Bank & Reimbursement Settlement State
+  const [bankAccountId, setBankAccountId] = useState<string>("");
+  const [reimbursedStatus, setReimbursedStatus] = useState<'PENDING' | 'REIMBURSED' | 'REJECTED'>('PENDING');
+  const [reimbursedAmountStr, setReimbursedAmountStr] = useState<string>("");
+  const [reimbursedToAccountId, setReimbursedToAccountId] = useState<string>("");
+  const [reimbursedNotes, setReimbursedNotes] = useState<string>("");
 
   useEffect(() => {
     if (defaultReimbursable !== undefined) {
@@ -49,6 +64,14 @@ export function AddExpenseModal({
       setSelectedTripId(activeTrip.id);
     }
   }, [defaultReimbursable, activeTrip]);
+
+  useEffect(() => {
+    // Auto-select default bank account if not yet chosen
+    if (!bankAccountId && bankAccounts.length > 0) {
+      const def = bankAccounts.find((a) => a.is_default) || bankAccounts[0];
+      if (def) setBankAccountId(def.id);
+    }
+  }, [bankAccounts, bankAccountId]);
 
   if (!isOpen) return null;
 
@@ -76,6 +99,8 @@ export function AddExpenseModal({
     const parsedAmount = parseFloat(amountStr);
     if (isNaN(parsedAmount) || parsedAmount <= 0) return;
 
+    const parsedReimbursedAmount = reimbursedAmountStr ? parseFloat(reimbursedAmountStr) : parsedAmount;
+
     onAddExpense(
       category,
       parsedAmount,
@@ -83,12 +108,19 @@ export function AddExpenseModal({
       reimbursable,
       selectedTripId || null,
       null,
-      receiptFile
+      receiptFile,
+      bankAccountId || null,
+      reimbursable ? reimbursedStatus : 'NOT_APPLICABLE',
+      reimbursable && reimbursedStatus === 'REIMBURSED' ? parsedReimbursedAmount : null,
+      reimbursable && reimbursedStatus === 'REIMBURSED' ? (reimbursedToAccountId || null) : null,
+      reimbursable && reimbursedStatus === 'REIMBURSED' ? reimbursedNotes.trim() : null
     );
     setAmountStr("");
     setDescription("");
     setReceiptFile(null);
     setPreviewUrl(null);
+    setReimbursedAmountStr("");
+    setReimbursedNotes("");
     onClose();
   };
 
@@ -178,6 +210,26 @@ export function AddExpenseModal({
             </select>
           </div>
 
+          {/* Paid From Bank Account / Wallet */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+              <span className="flex items-center gap-1.5"><Landmark className="w-3.5 h-3.5 text-indigo-500" /> Paid From Bank Account / Wallet</span>
+              <span className="text-[10px] text-slate-400 font-mono">Deducts from account balance</span>
+            </label>
+            <select
+              value={bankAccountId}
+              onChange={(e) => setBankAccountId(e.target.value)}
+              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:border-indigo-500"
+            >
+              <option value="">-- No Account Selected (Unmapped Spend) --</option>
+              {bankAccounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.account_name} ({a.account_type}) [Avail: ₹{a.calculatedBalance.toLocaleString("en-IN")}]
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Reimbursable Toggle Card */}
           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -201,6 +253,75 @@ export function AddExpenseModal({
               <div className="w-11 h-6 bg-slate-300 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
             </label>
           </div>
+
+          {/* Reimbursement Settlement Tracking Card (Only visible when Reimbursable = YES) */}
+          {reimbursable && (
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/5 via-indigo-500/5 to-purple-500/5 border border-emerald-500/30 dark:border-emerald-500/20 space-y-3 animate-fade-in">
+              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> Reimbursement Settlement Status
+                </span>
+                <select
+                  value={reimbursedStatus}
+                  onChange={(e) => setReimbursedStatus(e.target.value as any)}
+                  className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-600 text-xs font-bold text-emerald-700 dark:text-emerald-300"
+                >
+                  <option value="PENDING">⏳ Pending Reimbursal</option>
+                  <option value="REIMBURSED">✅ Already Reimbursed / Settled</option>
+                  <option value="REJECTED">❌ Rejected / Not Approved</option>
+                </select>
+              </div>
+
+              {reimbursedStatus === "REIMBURSED" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Actual Reimbursed Amount (₹) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={reimbursedAmountStr}
+                      onChange={(e) => setReimbursedAmountStr(e.target.value)}
+                      placeholder={`Full ask: ₹${amountStr || "0"}`}
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Deposited Into Bank Account *
+                    </label>
+                    <select
+                      value={reimbursedToAccountId}
+                      onChange={(e) => setReimbursedToAccountId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white"
+                    >
+                      <option value="">-- Select Receiving Account --</option>
+                      {bankAccounts.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.account_name} ({a.account_type})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Settlement Ref # / Payout Notes (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={reimbursedNotes}
+                      onChange={(e) => setReimbursedNotes(e.target.value)}
+                      placeholder="e.g. Settled via NEFT Ref #91823901 by HR on 15 Jul"
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Receipt Photo Upload Input */}
           <div>
