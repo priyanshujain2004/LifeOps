@@ -10,9 +10,14 @@ import type { TripRow } from "@/features/trips/types";
 import { getTodayIST } from "@/lib/utils";
 import { toast } from "sonner";
 import { appMemoryCache } from "@/lib/cache";
+import { useAppStore } from "@/store/useAppStore";
 
 export function useTimeline(initialDate?: string) {
   const { user } = useAuth();
+  const { impersonatedUserId } = useAppStore();
+  const targetUserId = impersonatedUserId || user?.id;
+  const isReadOnly = Boolean(impersonatedUserId && impersonatedUserId !== user?.id);
+
   const [selectedDate, setSelectedDate] = useState<string>(initialDate || getTodayIST());
   const [logs, setLogs] = useState<ActivityLog[]>(() => {
     const dateKey = initialDate || getTodayIST();
@@ -32,17 +37,17 @@ export function useTimeline(initialDate?: string) {
   });
 
   const fetchTimeline = useCallback(async () => {
-    if (!user?.id) return;
+    if (!targetUserId) return;
     if (!appMemoryCache.timelineLogsByDate[selectedDate] && !(selectedDate === getTodayIST() && appMemoryCache.todayLogs)) {
       setLoading(true);
     }
     try {
-      await ensureDatabaseSeeded(user.id);
+      await ensureDatabaseSeeded(targetUserId);
       const supabase = getSupabaseBrowserClient();
 
       // 1. Fetch activity types if not cached
       if (!appMemoryCache.activityTypes) {
-        const { data: typesData } = await supabase.from("activity_types").select("*").eq("user_id", user.id);
+        const { data: typesData } = await supabase.from("activity_types").select("*").eq("user_id", targetUserId);
         if (typesData && typesData.length > 0) {
           setActivityTypes(typesData);
           appMemoryCache.activityTypes = typesData;
@@ -55,7 +60,7 @@ export function useTimeline(initialDate?: string) {
 
       // 2. Fetch trips for lookup
       if (!appMemoryCache.trips) {
-        const { data: tripsData } = await supabase.from("trips").select("*").eq("user_id", user.id);
+        const { data: tripsData } = await supabase.from("trips").select("*").eq("user_id", targetUserId);
         if (tripsData) {
           setTrips(tripsData);
           appMemoryCache.trips = tripsData;
@@ -71,7 +76,7 @@ export function useTimeline(initialDate?: string) {
       const { data: logsData } = await supabase
         .from("activity_logs")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .gte("logged_at", startOfDay)
         .lte("logged_at", endOfDay)
         .order("logged_at", { ascending: true }); // chronological order
@@ -80,7 +85,7 @@ export function useTimeline(initialDate?: string) {
         setLogs(logsData);
         appMemoryCache.timelineLogsByDate[selectedDate] = logsData;
         if (selectedDate === getTodayIST()) {
-          appMemoryCache.todayLogs = logsData;
+          appMemoryCache.todayLogs = [...logsData].reverse();
           appMemoryCache.hasLoadedActivities = true;
         }
       } else {
@@ -96,7 +101,7 @@ export function useTimeline(initialDate?: string) {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, user?.id]);
+  }, [selectedDate, targetUserId]);
 
   useEffect(() => {
     fetchTimeline();
@@ -110,6 +115,10 @@ export function useTimeline(initialDate?: string) {
   };
 
   const updateNote = async (logId: string, newNote: string) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify logs.");
+      return;
+    }
     setLogs((prev) => {
       const next = prev.map((l) => (l.id === logId ? { ...l, notes: newNote || null } : l));
       syncTimelineCache(next);
@@ -134,6 +143,10 @@ export function useTimeline(initialDate?: string) {
     loggedAtIso?: string,
     newNote?: string | null
   ) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify logs.");
+      return;
+    }
     setLogs((prev) => {
       const next = prev.map((l) =>
         l.id === logId
@@ -166,6 +179,10 @@ export function useTimeline(initialDate?: string) {
   };
 
   const deleteLog = async (logId: string) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify logs.");
+      return;
+    }
     setLogs((prev) => {
       const next = prev.filter((l) => l.id !== logId);
       syncTimelineCache(next);

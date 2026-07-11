@@ -3,12 +3,16 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { Home, Clock, Navigation, DollarSign, BarChart2, Settings } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { user, loading } = useAuth();
   const { activeTrip, activePairedActivities } = useAppStore();
+
+  if (pathname === "/login" || (!user && !loading)) return null;
 
   const navItems = [
     { href: "/", label: "Home", icon: Home, badge: Object.keys(activePairedActivities).length > 0 ? Object.keys(activePairedActivities).length : null },

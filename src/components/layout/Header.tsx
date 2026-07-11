@@ -4,9 +4,13 @@ import React, { useEffect, useState } from "react";
 import { formatIST } from "@/lib/utils";
 import { useAppStore } from "@/store/useAppStore";
 import { useTheme } from "./ThemeProvider";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { Moon, Sun, Wifi, WifiOff, RefreshCw, Activity } from "lucide-react";
 
 export function Header() {
+  const pathname = usePathname();
+  const { user, loading } = useAuth();
   const [currentIST, setCurrentIST] = useState<string>("");
   const { isOffline, setIsOffline, pendingQueueCount, isSyncing, triggerSync, updatePendingCount } = useAppStore();
   const { theme, toggleTheme } = useTheme();
@@ -38,6 +42,8 @@ export function Header() {
       window.removeEventListener("offline", handleOffline);
     };
   }, [setIsOffline, triggerSync, updatePendingCount]);
+
+  if (pathname === "/login" || (!user && !loading)) return null;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md dark:bg-slate-950/80 dark:border-slate-800 transition-colors">

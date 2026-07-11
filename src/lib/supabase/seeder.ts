@@ -6,7 +6,7 @@ let isSeedingInProgress = false;
 let hasCheckedAndSeeded = false;
 
 export async function ensureDatabaseSeeded(userId?: string) {
-  if (!userId || hasCheckedAndSeeded || isSeedingInProgress) return;
+  if (!userId || userId === "demo" || hasCheckedAndSeeded || isSeedingInProgress) return;
   isSeedingInProgress = true;
 
   try {

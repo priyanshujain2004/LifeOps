@@ -8,6 +8,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { ThemeAwareToaster } from "@/components/layout/ThemeAwareToaster";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
+import { SuperAdminBanner } from "@/features/superadmin/components/SuperAdminBanner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -48,6 +49,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen pb-20 selection:bg-indigo-500 selection:text-white`}>
         <AuthProvider>
           <ThemeProvider>
+            <SuperAdminBanner />
             <Header />
             <ActiveTripBanner />
             <main className="max-w-4xl mx-auto px-4 py-6 overflow-x-hidden">

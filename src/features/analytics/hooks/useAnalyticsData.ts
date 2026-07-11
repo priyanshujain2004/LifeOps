@@ -35,9 +35,13 @@ export interface ExpenseDayTrend {
 }
 
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useAppStore } from "@/store/useAppStore";
 
 export function useAnalyticsData(days: number = 7) {
   const { user } = useAuth();
+  const { impersonatedUserId } = useAppStore();
+  const targetUserId = impersonatedUserId || user?.id;
+
   const [logs, setLogs] = useState<ActivityLog[]>(appMemoryCache.todayLogs || []);
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
     appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
@@ -49,16 +53,16 @@ export function useAnalyticsData(days: number = 7) {
   );
 
   const fetchAllData = useCallback(async () => {
-    if (!user?.id) return;
+    if (!targetUserId) return;
     if (!appMemoryCache.hasLoadedActivities || !appMemoryCache.hasLoadedTrips || !appMemoryCache.hasLoadedExpenses) {
       setLoading(true);
     }
     try {
-      await ensureDatabaseSeeded(user.id);
+      await ensureDatabaseSeeded(targetUserId);
       const supabase = getSupabaseBrowserClient();
 
       // 1. Activity types
-      const { data: typesData } = await supabase.from("activity_types").select("*").eq("user_id", user.id);
+      const { data: typesData } = await supabase.from("activity_types").select("*").eq("user_id", targetUserId);
       const resolvedTypes = (typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
       setActivityTypes(resolvedTypes);
       if (typesData && typesData.length > 0) appMemoryCache.activityTypes = typesData;
@@ -72,7 +76,7 @@ export function useAnalyticsData(days: number = 7) {
       const { data: logsData } = await supabase
         .from("activity_logs")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .gte("logged_at", cutoffIso)
         .order("logged_at", { ascending: true });
 
@@ -88,7 +92,7 @@ export function useAnalyticsData(days: number = 7) {
       const { data: tripsData } = await supabase
         .from("trips")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .gte("departed_at", cutoffIso)
         .order("departed_at", { ascending: true });
 
@@ -104,7 +108,7 @@ export function useAnalyticsData(days: number = 7) {
       const { data: expData } = await supabase
         .from("expenses")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .gte("logged_at", cutoffIso)
         .order("logged_at", { ascending: true });
 
@@ -120,7 +124,7 @@ export function useAnalyticsData(days: number = 7) {
     } finally {
       setLoading(false);
     }
-  }, [days, user?.id]);
+  }, [days, targetUserId]);
 
   useEffect(() => {
     fetchAllData();

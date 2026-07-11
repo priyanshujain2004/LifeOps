@@ -1,9 +1,69 @@
--- =========================================================
--- LifeLog Production Authentication, Roles & RLS Schema
--- Eliminates demo/anonymous users. Enforces auth.uid() and superadmin access.
--- =========================================================
+-- ==============================================================================
+-- LIFELOG PRODUCTION SCHEMA UPGRADE & SUPERADMIN IMPERSONATION RLS
+-- ==============================================================================
+-- Run this entire script inside your Supabase Dashboard -> SQL Editor.
+-- It establishes profiles, superadmin roles, strict RLS policies, and automatic
+-- seeding triggers for all new users.
+-- ==============================================================================
 
--- 1. Create User Roles Table (`user` vs `superadmin`)
+-- 1. PROFILES TABLE (Stores full name & email for search inside SuperAdmin dropdown)
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT,
+  full_name TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can view profiles if authenticated" ON public.profiles;
+CREATE POLICY "Anyone can view profiles if authenticated"
+  ON public.profiles FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
+CREATE POLICY "Users can update their own profile"
+  ON public.profiles FOR UPDATE
+  USING (auth.uid() = id);
+
+-- 2. AUTOMATIC PROFILE POPULATION TRIGGER
+CREATE OR REPLACE FUNCTION public.handle_new_user_profile()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1))
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET email = EXCLUDED.email,
+      full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name);
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created_profile ON auth.users;
+CREATE TRIGGER on_auth_user_created_profile
+  AFTER INSERT OR UPDATE ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user_profile();
+
+-- Backfill profiles for all existing users right now
+INSERT INTO public.profiles (id, email, full_name)
+SELECT 
+  id, 
+  email, 
+  COALESCE(raw_user_meta_data->>'full_name', split_part(email, '@', 1))
+FROM auth.users
+ON CONFLICT (id) DO UPDATE
+SET email = EXCLUDED.email,
+    full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name);
+
+
+-- 3. USER ROLES TABLE (Enforces 'user' vs 'superadmin')
 CREATE TABLE IF NOT EXISTS public.user_roles (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'superadmin')),
@@ -12,14 +72,17 @@ CREATE TABLE IF NOT EXISTS public.user_roles (
 
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Users can view own role" ON public.user_roles;
-CREATE POLICY "Users can view own role"
+DROP POLICY IF EXISTS "Users can view own role or superadmins view all" ON public.user_roles;
+CREATE POLICY "Users can view own role or superadmins view all"
   ON public.user_roles FOR SELECT
-  USING (auth.uid() = user_id OR EXISTS (
-    SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'superadmin'
-  ));
+  USING (
+    auth.uid() = user_id 
+    OR EXISTS (
+      SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'superadmin'
+    )
+  );
 
--- 2. Create Security Definer helper function public.is_superadmin()
+-- Helper security definer function to check superadmin status reliably inside RLS
 CREATE OR REPLACE FUNCTION public.is_superadmin()
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -33,7 +96,17 @@ BEGIN
 END;
 $$;
 
--- 3. Enforce Strict RLS across all 5 Core Tables
+-- Backfill standard user role for any users not yet in user_roles table
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'user' FROM auth.users
+ON CONFLICT (user_id) DO NOTHING;
+
+-- OPTIONAL: To promote an existing account to SuperAdmin right away, uncomment & edit:
+-- UPDATE public.user_roles SET role = 'superadmin' WHERE user_id = 'YOUR_USER_UUID_HERE';
+
+
+-- 4. ENFORCE STRICT RLS ON CORE DATA TABLES (+ SUPERADMIN READ ACCESS)
+
 -- Table 1: activity_types
 ALTER TABLE public.activity_types ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can manage their own activity types" ON public.activity_types;
@@ -119,7 +192,8 @@ CREATE POLICY "Users can update own trips" ON public.trips
 CREATE POLICY "Users can delete own trips" ON public.trips
   FOR DELETE USING (auth.uid() = user_id OR public.is_superadmin());
 
--- 4. Update Trigger Function to assign default role + seed database upon signup
+
+-- 5. AUTOMATIC DATABASE SEEDING FUNCTION & TRIGGER ON NEW USER CREATION
 CREATE OR REPLACE FUNCTION public.seed_user_data(target_user_id UUID)
 RETURNS void
 LANGUAGE plpgsql

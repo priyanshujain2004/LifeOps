@@ -13,25 +13,28 @@ import { appMemoryCache } from "@/lib/cache";
 
 export function useExpenses() {
   const { user } = useAuth();
+  const { isOffline, updatePendingCount, impersonatedUserId } = useAppStore();
+  const targetUserId = impersonatedUserId || user?.id;
+  const isReadOnly = Boolean(impersonatedUserId && impersonatedUserId !== user?.id);
+
   const [expenses, setExpenses] = useState<ExpenseRow[]>(appMemoryCache.expenses || []);
   const [trips, setTrips] = useState<TripRow[]>(appMemoryCache.trips || []);
   const [loading, setLoading] = useState(!appMemoryCache.hasLoadedExpenses);
-  const { isOffline, activeTrip, updatePendingCount } = useAppStore();
 
   const fetchExpensesAndTrips = useCallback(async () => {
-    if (!user?.id) return;
+    if (!targetUserId) return;
     if (!appMemoryCache.hasLoadedExpenses) {
       setLoading(true);
     }
     try {
-      await ensureDatabaseSeeded(user.id);
+      await ensureDatabaseSeeded(targetUserId);
       const supabase = getSupabaseBrowserClient();
 
       // Fetch expenses
       const { data: expData } = await supabase
         .from("expenses")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .order("logged_at", { ascending: false });
 
       const resolvedExp = expData || (appMemoryCache.expenses || []);
@@ -44,7 +47,7 @@ export function useExpenses() {
         const { data: tripsData } = await supabase
           .from("trips")
           .select("*")
-          .eq("user_id", user.id)
+          .eq("user_id", targetUserId)
           .order("departed_at", { ascending: false })
           .limit(20);
 
@@ -56,11 +59,11 @@ export function useExpenses() {
         setTrips(appMemoryCache.trips);
       }
     } catch (err) {
-      console.error("Error loading expenses:", err);
+      console.error("Error fetching expenses & trips:", err);
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [targetUserId]);
 
   useEffect(() => {
     fetchExpensesAndTrips();
@@ -111,6 +114,10 @@ export function useExpenses() {
     activityLogId?: string | null,
     receiptFile?: File | null
   ) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot add expenses.");
+      return;
+    }
     if (!user?.id) return;
     const nowIso = new Date().toISOString();
     const tempId = `exp-${Date.now()}`;
@@ -121,33 +128,31 @@ export function useExpenses() {
       try {
         const supabase = getSupabaseBrowserClient();
         const fileExt = receiptFile.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-        const filePath = `user-receipts/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const { error: uploadErr } = await supabase.storage
           .from("receipts")
-          .upload(filePath, receiptFile);
+          .upload(fileName, receiptFile, { cacheControl: "3600", upsert: false });
 
-        if (!uploadError) {
-          const { data: publicUrlData } = supabase.storage.from("receipts").getPublicUrl(filePath);
+        if (!uploadErr) {
+          const { data: publicUrlData } = supabase.storage.from("receipts").getPublicUrl(fileName);
           receiptUrl = publicUrlData?.publicUrl || null;
         } else {
-          console.warn("Receipt upload failed:", uploadError);
+          console.warn("Receipt image upload failed:", uploadErr.message);
         }
       } catch (err) {
-        console.error("Storage error:", err);
+        console.warn("Storage exception during receipt upload:", err);
       }
     }
 
     const newExpense: ExpenseRow = {
       id: tempId,
       user_id: user.id,
-      trip_id: tripId || (activeTrip ? activeTrip.id : null),
-      activity_log_id: activityLogId || null,
       category,
       amount,
       description: description || null,
       reimbursable,
+      trip_id: tripId || null,
+      activity_log_id: activityLogId || null,
       receipt_url: receiptUrl,
       logged_at: nowIso,
       created_at: nowIso,
@@ -158,18 +163,19 @@ export function useExpenses() {
       appMemoryCache.expenses = next;
       return next;
     });
-    toast.success(`Logged Expense: ₹${amount.toFixed(2)} (${category})`);
+    toast.success("Expense logged!");
 
     if (isOffline) {
       await queueExpense({
         client_temp_id: tempId,
         user_id: user.id,
-        trip_id: tripId || (activeTrip ? activeTrip.id : null),
-        activity_log_id: activityLogId || null,
         category,
         amount,
         description: description || null,
         reimbursable,
+        trip_id: tripId || null,
+        activity_log_id: activityLogId || null,
+        receipt_url: receiptUrl,
         logged_at: nowIso,
         created_at: nowIso,
       });
@@ -181,12 +187,12 @@ export function useExpenses() {
           .from("expenses")
           .insert({
             user_id: user.id,
-            trip_id: tripId || (activeTrip ? activeTrip.id : null),
-            activity_log_id: activityLogId || null,
             category,
             amount,
             description: description || null,
             reimbursable,
+            trip_id: tripId || null,
+            activity_log_id: activityLogId || null,
             receipt_url: receiptUrl,
             logged_at: nowIso,
           })
@@ -214,6 +220,10 @@ export function useExpenses() {
     reimbursable: boolean,
     tripId?: string | null
   ) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot edit expenses.");
+      return;
+    }
     setExpenses((prev) => {
       const next = prev.map((e) =>
         e.id === id
@@ -250,6 +260,10 @@ export function useExpenses() {
   };
 
   const deleteExpense = async (id: string) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot delete expenses.");
+      return;
+    }
     setExpenses((prev) => {
       const next = prev.filter((e) => e.id !== id);
       appMemoryCache.expenses = next;

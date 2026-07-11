@@ -21,22 +21,25 @@ export function useActivities() {
     appMemoryCache.todayLogs || []
   );
   const [loading, setLoading] = useState(!appMemoryCache.hasLoadedActivities);
-  const { isOffline, activeTrip, startPairedActivity, endPairedActivity, updatePendingCount } = useAppStore();
+  const { isOffline, activeTrip, startPairedActivity, endPairedActivity, updatePendingCount, impersonatedUserId } = useAppStore();
+
+  const targetUserId = impersonatedUserId || user?.id;
+  const isReadOnly = Boolean(impersonatedUserId && impersonatedUserId !== user?.id);
 
   const fetchActivities = useCallback(async () => {
-    if (!user?.id) return;
+    if (!targetUserId) return;
     if (!appMemoryCache.hasLoadedActivities) {
       setLoading(true);
     }
     try {
-      await ensureDatabaseSeeded(user.id);
+      await ensureDatabaseSeeded(targetUserId);
       const supabase = getSupabaseBrowserClient();
       
       // Fetch user's active activity types
       const { data: typesData, error: typesError } = await supabase
         .from("activity_types")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .eq("active", true)
         .order("sort_order", { ascending: true });
 
@@ -51,7 +54,7 @@ export function useActivities() {
       const { data: logsData, error: logsError } = await supabase
         .from("activity_logs")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .gte("logged_at", startOfDay.toISOString())
         .order("logged_at", { ascending: false });
 
@@ -64,7 +67,7 @@ export function useActivities() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [targetUserId]);
 
   useEffect(() => {
     fetchActivities();
@@ -75,6 +78,10 @@ export function useActivities() {
     notes?: string | null,
     onExpenseTrigger?: (activityLogId: string, isReimbursable: boolean) => void
   ) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify target user's logs.");
+      return;
+    }
     const nowIso = new Date().toISOString();
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
@@ -177,6 +184,10 @@ export function useActivities() {
     pairLabel: string,
     notes?: string | null
   ) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify target user's logs.");
+      return;
+    }
     const nowIso = new Date().toISOString();
     const tempId = `temp-${Date.now()}`;
 

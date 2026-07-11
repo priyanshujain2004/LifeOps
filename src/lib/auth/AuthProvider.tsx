@@ -161,6 +161,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.replace("/login");
   };
 
+  if (loading && pathname !== "/login") {
+    return (
+      <AuthContext.Provider value={{ user, session, role, loading, signInWithEmail, signUpWithEmail, signOut }}>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-white p-6 space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-indigo-600/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center text-3xl font-bold animate-pulse shadow-2xl">
+            ⚡
+          </div>
+          <div className="text-center space-y-1">
+            <h2 className="text-lg font-bold tracking-tight">Securing LifeLog Session...</h2>
+            <p className="text-xs text-slate-400 font-mono">Verifying cloud authentication & offline sync state</p>
+          </div>
+          <div className="w-32 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="w-full h-full bg-indigo-500 rounded-full animate-pulse" />
+          </div>
+        </div>
+      </AuthContext.Provider>
+    );
+  }
+
+  if (!loading && !user && pathname !== "/login") {
+    return (
+      <AuthContext.Provider value={{ user, session, role, loading, signInWithEmail, signUpWithEmail, signOut }}>
+        <div className="min-h-screen bg-slate-950" />
+      </AuthContext.Provider>
+    );
+  }
+
   return (
     <AuthContext.Provider value={{ user, session, role, loading, signInWithEmail, signUpWithEmail, signOut }}>
       {children}

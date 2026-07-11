@@ -19,6 +19,7 @@ interface AppStoreState {
   isSyncing: boolean;
   activeTrip: TripRow | null;
   activePairedActivities: Record<string, ActivePairSession>; // key is startActivityId or pairLabel
+  impersonatedUserId: string | null;
   
   // Actions
   setIsOffline: (status: boolean) => void;
@@ -28,6 +29,7 @@ interface AppStoreState {
   startPairedActivity: (session: ActivePairSession) => void;
   endPairedActivity: (startActivityId: string) => void;
   clearAllActivePairs: () => void;
+  setImpersonatedUserId: (userId: string | null) => void;
 }
 
 export const useAppStore = create<AppStoreState>((set, get) => ({
@@ -36,8 +38,20 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
   isSyncing: false,
   activeTrip: null,
   activePairedActivities: {},
+  impersonatedUserId: null,
 
   setIsOffline: (status) => set({ isOffline: status }),
+
+  setImpersonatedUserId: (userId) => {
+    // Clear app memory cache on user switch
+    try {
+      if (typeof window !== 'undefined') {
+        const { appMemoryCache } = require('../lib/cache');
+        appMemoryCache.clear();
+      }
+    } catch {}
+    set({ impersonatedUserId: userId });
+  },
 
   updatePendingCount: async () => {
     if (typeof window === 'undefined') return;

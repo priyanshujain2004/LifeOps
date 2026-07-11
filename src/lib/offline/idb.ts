@@ -19,6 +19,7 @@ export interface PendingExpense {
   amount: number;
   description?: string | null;
   reimbursable: boolean;
+  receipt_url?: string | null;
   logged_at: string;
   created_at: string;
 }

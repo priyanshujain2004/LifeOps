@@ -53,11 +53,6 @@ export function AuthForm() {
     }
   };
 
-  const handleDemoAccess = () => {
-    toast.success("Demo Mode Activated! Loaded with seed defaults.");
-    router.push("/");
-  };
-
   return (
     <div className="w-full max-w-md mx-auto p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 animate-fade-in">
       <div className="text-center space-y-2">
@@ -66,7 +61,7 @@ export function AuthForm() {
         </div>
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">Welcome to LifeLog</h1>
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Personal Routine, Mobility & Expense Tracker with Offline Sync
+          Personal Routine, Mobility & Expense Tracker with Real-Time Cloud Sync
         </p>
       </div>
 
@@ -142,33 +137,9 @@ export function AuthForm() {
         </button>
       </form>
 
-      {/* Demo Mode Instant Launch Card */}
-      <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={handleDemoAccess}
-          className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-slate-50 to-indigo-500/10 dark:from-emerald-950/60 dark:via-slate-900 dark:to-indigo-950/60 hover:border-emerald-500/50 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center justify-between shadow-md transition-all group"
-        >
-          <div className="flex items-center gap-2.5 text-left">
-            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-              <Zap className="w-4 h-4 animate-pulse" />
-            </div>
-            <div>
-              <span className="block text-sm text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">
-                Instant Demo Mode (No Signup)
-              </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
-                Test all 7 features with pre-seeded activities & trips
-              </span>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform" />
-        </button>
-      </div>
-
-      <div className="flex items-center justify-center gap-2 text-center text-xs text-slate-500 pt-2 font-mono">
+      <div className="flex items-center justify-center gap-2 text-center text-xs text-slate-500 pt-2 font-mono border-t border-slate-200 dark:border-slate-800">
         <ShieldCheck className="w-4 h-4 text-emerald-400" />
-        <span>100% Free-tier single-user or multi-user cloud setup</span>
+        <span>100% Production Grade Cloud & Offline Sync</span>
       </div>
     </div>
   );

@@ -52,6 +52,7 @@ export async function flushOfflineQueues(): Promise<{ syncedLogs: number; synced
         amount: expense.amount,
         description: expense.description || null,
         reimbursable: expense.reimbursable,
+        receipt_url: expense.receipt_url || null,
         logged_at: expense.logged_at,
       });
 

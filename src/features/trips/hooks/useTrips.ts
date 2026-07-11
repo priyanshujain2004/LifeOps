@@ -13,25 +13,28 @@ import { appMemoryCache } from "@/lib/cache";
 
 export function useTrips() {
   const { user } = useAuth();
+  const { setActiveTrip, activeTrip, impersonatedUserId } = useAppStore();
+  const targetUserId = impersonatedUserId || user?.id;
+  const isReadOnly = Boolean(impersonatedUserId && impersonatedUserId !== user?.id);
+
   const [trips, setTrips] = useState<TripRow[]>(appMemoryCache.trips || []);
   const [locations, setLocations] = useState<LocationRow[]>(appMemoryCache.locations || DEFAULT_LOCATIONS);
   const [loading, setLoading] = useState(!appMemoryCache.hasLoadedTrips);
-  const { activeTrip, setActiveTrip } = useAppStore();
 
   const fetchTripsAndLocations = useCallback(async () => {
-    if (!user?.id) return;
+    if (!targetUserId) return;
     if (!appMemoryCache.hasLoadedTrips) {
       setLoading(true);
     }
     try {
-      await ensureDatabaseSeeded(user.id);
+      await ensureDatabaseSeeded(targetUserId);
       const supabase = getSupabaseBrowserClient();
 
       // Fetch active/all locations
       const { data: locsData } = await supabase
         .from("locations")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .eq("active", true)
         .order("name", { ascending: true });
 
@@ -43,7 +46,7 @@ export function useTrips() {
       const { data: tripsData } = await supabase
         .from("trips")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .order("departed_at", { ascending: false });
 
       const resolvedTrips = tripsData || (appMemoryCache.trips || []);
@@ -58,7 +61,7 @@ export function useTrips() {
     } finally {
       setLoading(false);
     }
-  }, [setActiveTrip, user?.id]);
+  }, [setActiveTrip, targetUserId]);
 
   useEffect(() => {
     fetchTripsAndLocations();
@@ -73,6 +76,10 @@ export function useTrips() {
     notes?: string | null,
     isReimbursableOverride?: boolean
   ) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot start trips.");
+      return;
+    }
     if (!user?.id) return;
     const isReimbursable = typeof isReimbursableOverride === "boolean" ? isReimbursableOverride : computeReimbursability(tripType);
     const nowIso = new Date().toISOString();
@@ -132,6 +139,10 @@ export function useTrips() {
   };
 
   const endTrip = async (tripId: string) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot complete trips.");
+      return;
+    }
     const arrivedAt = new Date().toISOString();
     setTrips((prev) => {
       const next: TripRow[] = prev.map((t) => (t.id === tripId ? { ...t, status: "COMPLETED" as const, arrived_at: arrivedAt } : t));
@@ -155,6 +166,10 @@ export function useTrips() {
   };
 
   const addLocation = async (name: string, type: "HOME" | "OFFICE" | "SITE", address?: string) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot add locations.");
+      return;
+    }
     if (!user?.id) return;
     const tempId = `loc-${Date.now()}`;
     const newLoc: LocationRow = {

@@ -10,9 +10,14 @@ import type { LocationRow } from "@/features/trips/types";
 import { DEFAULT_LOCATIONS } from "@/features/trips/types/seedLocations";
 import { toast } from "sonner";
 import { appMemoryCache } from "@/lib/cache";
+import { useAppStore } from "@/store/useAppStore";
 
 export function useSettings() {
   const { user } = useAuth();
+  const { impersonatedUserId } = useAppStore();
+  const targetUserId = impersonatedUserId || user?.id;
+  const isReadOnly = Boolean(impersonatedUserId && impersonatedUserId !== user?.id);
+
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
     appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
   );
@@ -22,19 +27,19 @@ export function useSettings() {
   const [loading, setLoading] = useState(!appMemoryCache.hasLoadedSettings);
 
   const fetchConfig = useCallback(async () => {
-    if (!user?.id) return;
+    if (!targetUserId) return;
     if (!appMemoryCache.hasLoadedSettings) {
       setLoading(true);
     }
     try {
-      await ensureDatabaseSeeded(user.id);
+      await ensureDatabaseSeeded(targetUserId);
       const supabase = getSupabaseBrowserClient();
 
       // Fetch activity types
       const { data: typesData } = await supabase
         .from("activity_types")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .order("sort_order", { ascending: true });
 
       const resolvedTypes = (typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
@@ -45,7 +50,7 @@ export function useSettings() {
       const { data: locsData } = await supabase
         .from("locations")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", targetUserId)
         .order("name", { ascending: true });
 
       const resolvedLocs = (locsData && locsData.length > 0) ? locsData : (appMemoryCache.locations || DEFAULT_LOCATIONS);
@@ -57,7 +62,7 @@ export function useSettings() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [targetUserId]);
 
   useEffect(() => {
     fetchConfig();
@@ -65,6 +70,10 @@ export function useSettings() {
 
   // Activity Types CRUD
   const saveActivityType = async (type: Partial<ActivityType> & { name: string; category: any }) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify settings.");
+      return;
+    }
     if (!user?.id) return;
     const isNew = !type.id || type.id.startsWith("new-");
     const tempId = isNew ? `custom-${Date.now()}` : type.id!;
@@ -156,6 +165,10 @@ export function useSettings() {
   };
 
   const deleteActivityType = async (id: string) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify settings.");
+      return;
+    }
     setActivityTypes((prev) => {
       const next = prev.filter((t) => t.id !== id);
       appMemoryCache.activityTypes = next;
@@ -171,6 +184,10 @@ export function useSettings() {
   };
 
   const moveActivitySort = async (id: string, direction: "UP" | "DOWN") => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify settings.");
+      return;
+    }
     const idx = activityTypes.findIndex((t) => t.id === id);
     if (idx === -1) return;
     const targetIdx = direction === "UP" ? idx - 1 : idx + 1;
@@ -200,6 +217,10 @@ export function useSettings() {
 
   // Locations CRUD
   const saveLocation = async (loc: Partial<LocationRow> & { name: string; type: any }) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify settings.");
+      return;
+    }
     if (!user?.id) return;
     const isNew = !loc.id || loc.id.startsWith("new-");
     const tempId = isNew ? `loc-${Date.now()}` : loc.id!;
@@ -258,6 +279,10 @@ export function useSettings() {
   };
 
   const deleteLocation = async (id: string) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify settings.");
+      return;
+    }
     setLocations((prev) => {
       const next = prev.filter((l) => l.id !== id);
       appMemoryCache.locations = next;
@@ -293,6 +318,10 @@ export function useSettings() {
   };
 
   const importBackupJSON = async (file: File) => {
+    if (isReadOnly) {
+      toast.error("SuperAdmin Impersonation is Read-Only. Cannot modify settings.");
+      return;
+    }
     try {
       const text = await file.text();
       const parsed = JSON.parse(text);
