@@ -7,6 +7,7 @@ import { ActiveTripBanner } from "@/components/layout/ActiveTripBanner";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { ThemeAwareToaster } from "@/components/layout/ThemeAwareToaster";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,15 +46,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen pb-20 selection:bg-indigo-500 selection:text-white`}>
-        <ThemeProvider>
-          <Header />
-          <ActiveTripBanner />
-          <main className="max-w-4xl mx-auto px-4 py-6 overflow-x-hidden">
-            <PageTransition>{children}</PageTransition>
-          </main>
-          <BottomNav />
-          <ThemeAwareToaster />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <Header />
+            <ActiveTripBanner />
+            <main className="max-w-4xl mx-auto px-4 py-6 overflow-x-hidden">
+              <PageTransition>{children}</PageTransition>
+            </main>
+            <BottomNav />
+            <ThemeAwareToaster />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

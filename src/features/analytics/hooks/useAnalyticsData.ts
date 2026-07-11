@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureDatabaseSeeded } from "@/lib/supabase/seeder";
 import type { ActivityLog, ActivityType } from "@/features/activities/types";
 import { DEFAULT_ACTIVITY_TYPES } from "@/features/activities/types/seedDefaults";
 import type { TripRow } from "@/features/trips/types";
@@ -33,7 +34,10 @@ export interface ExpenseDayTrend {
   personal: number;
 }
 
+import { useAuth } from "@/lib/auth/AuthProvider";
+
 export function useAnalyticsData(days: number = 7) {
+  const { user } = useAuth();
   const [logs, setLogs] = useState<ActivityLog[]>(appMemoryCache.todayLogs || []);
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
     appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
@@ -45,14 +49,16 @@ export function useAnalyticsData(days: number = 7) {
   );
 
   const fetchAllData = useCallback(async () => {
+    if (!user?.id) return;
     if (!appMemoryCache.hasLoadedActivities || !appMemoryCache.hasLoadedTrips || !appMemoryCache.hasLoadedExpenses) {
       setLoading(true);
     }
     try {
+      await ensureDatabaseSeeded(user.id);
       const supabase = getSupabaseBrowserClient();
 
       // 1. Activity types
-      const { data: typesData } = await supabase.from("activity_types").select("*");
+      const { data: typesData } = await supabase.from("activity_types").select("*").eq("user_id", user.id);
       const resolvedTypes = (typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
       setActivityTypes(resolvedTypes);
       if (typesData && typesData.length > 0) appMemoryCache.activityTypes = typesData;
@@ -66,50 +72,55 @@ export function useAnalyticsData(days: number = 7) {
       const { data: logsData } = await supabase
         .from("activity_logs")
         .select("*")
+        .eq("user_id", user.id)
         .gte("logged_at", cutoffIso)
         .order("logged_at", { ascending: true });
 
       if (logsData) {
         setLogs(logsData);
+        appMemoryCache.todayLogs = logsData;
       } else {
         setLogs(appMemoryCache.todayLogs || []);
       }
+      appMemoryCache.hasLoadedActivities = true;
 
       // 3. Trips
       const { data: tripsData } = await supabase
         .from("trips")
         .select("*")
+        .eq("user_id", user.id)
         .gte("departed_at", cutoffIso)
         .order("departed_at", { ascending: true });
 
       if (tripsData) {
         setTrips(tripsData);
         appMemoryCache.trips = tripsData;
-        appMemoryCache.hasLoadedTrips = true;
       } else {
         setTrips(appMemoryCache.trips || []);
       }
+      appMemoryCache.hasLoadedTrips = true;
 
       // 4. Expenses
       const { data: expData } = await supabase
         .from("expenses")
         .select("*")
+        .eq("user_id", user.id)
         .gte("logged_at", cutoffIso)
         .order("logged_at", { ascending: true });
 
-      if (expData && expData.length > 0) {
+      if (expData) {
         setExpenses(expData);
         appMemoryCache.expenses = expData;
-        appMemoryCache.hasLoadedExpenses = true;
       } else {
         setExpenses(appMemoryCache.expenses || []);
       }
+      appMemoryCache.hasLoadedExpenses = true;
     } catch (err) {
       console.error("Error loading analytics data:", err);
     } finally {
       setLoading(false);
     }
-  }, [days]);
+  }, [days, user?.id]);
 
   useEffect(() => {
     fetchAllData();

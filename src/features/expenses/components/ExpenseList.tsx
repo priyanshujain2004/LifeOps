@@ -117,11 +117,11 @@ export function ExpenseList({ expenses, onDeleteExpense, onEditExpense, trips = 
 
             <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-0 border-slate-200 dark:border-slate-800">
               <div className="text-left sm:text-right">
-                <span className="text-lg font-mono font-extrabold text-emerald-400 block leading-tight">
+                <span className="text-lg font-mono font-extrabold text-emerald-600 dark:text-emerald-400 block leading-tight">
                   {amountFormatted}
                 </span>
                 {expense.trip_id && (
-                  <span className="text-[10px] text-indigo-400 font-mono">Trip #{expense.trip_id.slice(-5)}</span>
+                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono">Trip #{expense.trip_id.slice(-5)}</span>
                 )}
               </div>
 
@@ -129,7 +129,7 @@ export function ExpenseList({ expenses, onDeleteExpense, onEditExpense, trips = 
                 {expense.receipt_url && (
                   <button
                     onClick={() => setSelectedReceipt(expense.receipt_url!)}
-                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-400 hover:text-white transition-colors"
+                    className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-white transition-colors border border-slate-200 dark:border-slate-700"
                     title="View Receipt Photo"
                   >
                     <FileText className="w-4 h-4" />
@@ -139,7 +139,7 @@ export function ExpenseList({ expenses, onDeleteExpense, onEditExpense, trips = 
                 {onEditExpense && (
                   <button
                     onClick={() => startEdit(expense)}
-                    className="p-2 rounded-xl bg-slate-800/60 hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 transition-colors"
+                    className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors border border-slate-200 dark:border-slate-700"
                     title="Edit & Remap Expense"
                   >
                     <Edit3 className="w-4 h-4" />
@@ -148,7 +148,7 @@ export function ExpenseList({ expenses, onDeleteExpense, onEditExpense, trips = 
 
                 <button
                   onClick={() => onDeleteExpense(expense.id)}
-                  className="p-2 rounded-xl bg-slate-800/60 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+                  className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-red-500/10 dark:hover:bg-red-500/20 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors border border-slate-200 dark:border-slate-700"
                   title="Delete Expense"
                 >
                   <Trash2 className="w-4 h-4" />

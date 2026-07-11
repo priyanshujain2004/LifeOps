@@ -111,7 +111,7 @@ export function TimelineEntry({
                 {linkedTrip && (
                   <Link
                     href={`/trips?id=${linkedTrip.id}`}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-medium hover:bg-emerald-500/25 transition-colors"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-medium hover:bg-emerald-500/25 transition-colors"
                   >
                     <Navigation className="w-2.5 h-2.5" />
                     <span>Trip: {linkedTrip.origin_label} ➔ {linkedTrip.destination_label}</span>

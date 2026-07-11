@@ -18,6 +18,7 @@ export interface AppMemoryCache {
   hasLoadedSettings: boolean;
 
   timelineLogsByDate: Record<string, ActivityLog[]>;
+  clear: () => void;
 }
 
 export const appMemoryCache: AppMemoryCache = {
@@ -35,4 +36,17 @@ export const appMemoryCache: AppMemoryCache = {
   hasLoadedSettings: false,
 
   timelineLogsByDate: {},
+
+  clear() {
+    this.hasLoadedActivities = false;
+    this.activityTypes = null;
+    this.todayLogs = null;
+    this.hasLoadedTrips = false;
+    this.trips = null;
+    this.locations = null;
+    this.hasLoadedExpenses = false;
+    this.expenses = null;
+    this.hasLoadedSettings = false;
+    this.timelineLogsByDate = {};
+  },
 };

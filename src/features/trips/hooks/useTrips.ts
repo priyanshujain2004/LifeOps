@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureDatabaseSeeded } from "@/lib/supabase/seeder";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { useAppStore } from "@/store/useAppStore";
 import type { TripRow, LocationRow, TripType } from "../types";
 import { DEFAULT_LOCATIONS } from "../types/seedLocations";
@@ -10,22 +12,26 @@ import { toast } from "sonner";
 import { appMemoryCache } from "@/lib/cache";
 
 export function useTrips() {
+  const { user } = useAuth();
   const [trips, setTrips] = useState<TripRow[]>(appMemoryCache.trips || []);
   const [locations, setLocations] = useState<LocationRow[]>(appMemoryCache.locations || DEFAULT_LOCATIONS);
   const [loading, setLoading] = useState(!appMemoryCache.hasLoadedTrips);
   const { activeTrip, setActiveTrip } = useAppStore();
 
   const fetchTripsAndLocations = useCallback(async () => {
+    if (!user?.id) return;
     if (!appMemoryCache.hasLoadedTrips) {
       setLoading(true);
     }
     try {
+      await ensureDatabaseSeeded(user.id);
       const supabase = getSupabaseBrowserClient();
 
       // Fetch active/all locations
       const { data: locsData } = await supabase
         .from("locations")
         .select("*")
+        .eq("user_id", user.id)
         .eq("active", true)
         .order("name", { ascending: true });
 
@@ -37,6 +43,7 @@ export function useTrips() {
       const { data: tripsData } = await supabase
         .from("trips")
         .select("*")
+        .eq("user_id", user.id)
         .order("departed_at", { ascending: false });
 
       const resolvedTrips = tripsData || (appMemoryCache.trips || []);
@@ -51,7 +58,7 @@ export function useTrips() {
     } finally {
       setLoading(false);
     }
-  }, [setActiveTrip]);
+  }, [setActiveTrip, user?.id]);
 
   useEffect(() => {
     fetchTripsAndLocations();
@@ -65,13 +72,14 @@ export function useTrips() {
     destinationLocationId?: string | null,
     notes?: string | null
   ) => {
+    if (!user?.id) return;
     const isReimbursable = computeReimbursability(tripType);
     const nowIso = new Date().toISOString();
     const tempId = `trip-${Date.now()}`;
 
     const newTrip: TripRow = {
       id: tempId,
-      user_id: "current-user",
+      user_id: user.id,
       trip_type: tripType,
       origin_label: originLabel,
       destination_label: destinationLabel,
@@ -99,7 +107,7 @@ export function useTrips() {
       const { data, error } = await supabase
         .from("trips")
         .insert({
-          user_id: "demo-user",
+          user_id: user.id,
           trip_type: tripType,
           origin_label: originLabel,
           destination_label: destinationLabel,
@@ -146,10 +154,11 @@ export function useTrips() {
   };
 
   const addLocation = async (name: string, type: "HOME" | "OFFICE" | "SITE", address?: string) => {
+    if (!user?.id) return;
     const tempId = `loc-${Date.now()}`;
     const newLoc: LocationRow = {
       id: tempId,
-      user_id: "current-user",
+      user_id: user.id,
       name,
       type,
       address: address || null,
@@ -163,7 +172,7 @@ export function useTrips() {
       const supabase = getSupabaseBrowserClient();
       const { data } = await supabase
         .from("locations")
-        .insert({ user_id: "demo-user", name, type, address: address || null })
+        .insert({ user_id: user.id, name, type, address: address || null })
         .select()
         .single();
       if (data) {

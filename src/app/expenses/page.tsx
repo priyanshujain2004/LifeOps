@@ -114,7 +114,7 @@ function ExpensesContent() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-20 rounded-2xl bg-slate-800/40 animate-pulse border border-slate-800" />
+              <div key={i} className="h-20 rounded-2xl bg-slate-200/70 dark:bg-slate-800/40 animate-pulse border border-slate-300 dark:border-slate-800" />
             ))}
           </div>
         ) : (
@@ -145,8 +145,8 @@ export default function ExpensesPage() {
     <Suspense
       fallback={
         <div className="space-y-4 py-8">
-          <div className="h-32 rounded-3xl bg-slate-800/40 animate-pulse border border-slate-800" />
-          <div className="h-64 rounded-3xl bg-slate-800/40 animate-pulse border border-slate-800" />
+          <div className="h-32 rounded-3xl bg-slate-200/70 dark:bg-slate-800/40 animate-pulse border border-slate-300 dark:border-slate-800" />
+          <div className="h-64 rounded-3xl bg-slate-200/70 dark:bg-slate-800/40 animate-pulse border border-slate-300 dark:border-slate-800" />
         </div>
       }
     >

@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureDatabaseSeeded } from "@/lib/supabase/seeder";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import type { ActivityLog, ActivityType } from "@/features/activities/types";
 import { DEFAULT_ACTIVITY_TYPES } from "@/features/activities/types/seedDefaults";
 import type { TripRow } from "@/features/trips/types";
@@ -10,6 +12,7 @@ import { toast } from "sonner";
 import { appMemoryCache } from "@/lib/cache";
 
 export function useTimeline(initialDate?: string) {
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<string>(initialDate || getTodayIST());
   const [logs, setLogs] = useState<ActivityLog[]>(() => {
     const dateKey = initialDate || getTodayIST();
@@ -29,15 +32,17 @@ export function useTimeline(initialDate?: string) {
   });
 
   const fetchTimeline = useCallback(async () => {
+    if (!user?.id) return;
     if (!appMemoryCache.timelineLogsByDate[selectedDate] && !(selectedDate === getTodayIST() && appMemoryCache.todayLogs)) {
       setLoading(true);
     }
     try {
+      await ensureDatabaseSeeded(user.id);
       const supabase = getSupabaseBrowserClient();
 
       // 1. Fetch activity types if not cached
       if (!appMemoryCache.activityTypes) {
-        const { data: typesData } = await supabase.from("activity_types").select("*");
+        const { data: typesData } = await supabase.from("activity_types").select("*").eq("user_id", user.id);
         if (typesData && typesData.length > 0) {
           setActivityTypes(typesData);
           appMemoryCache.activityTypes = typesData;
@@ -50,7 +55,7 @@ export function useTimeline(initialDate?: string) {
 
       // 2. Fetch trips for lookup
       if (!appMemoryCache.trips) {
-        const { data: tripsData } = await supabase.from("trips").select("*");
+        const { data: tripsData } = await supabase.from("trips").select("*").eq("user_id", user.id);
         if (tripsData) {
           setTrips(tripsData);
           appMemoryCache.trips = tripsData;
@@ -66,6 +71,7 @@ export function useTimeline(initialDate?: string) {
       const { data: logsData } = await supabase
         .from("activity_logs")
         .select("*")
+        .eq("user_id", user.id)
         .gte("logged_at", startOfDay)
         .lte("logged_at", endOfDay)
         .order("logged_at", { ascending: true }); // chronological order
@@ -73,16 +79,24 @@ export function useTimeline(initialDate?: string) {
       if (logsData) {
         setLogs(logsData);
         appMemoryCache.timelineLogsByDate[selectedDate] = logsData;
+        if (selectedDate === getTodayIST()) {
+          appMemoryCache.todayLogs = logsData;
+          appMemoryCache.hasLoadedActivities = true;
+        }
       } else {
         setLogs([]);
         appMemoryCache.timelineLogsByDate[selectedDate] = [];
+        if (selectedDate === getTodayIST()) {
+          appMemoryCache.todayLogs = [];
+          appMemoryCache.hasLoadedActivities = true;
+        }
       }
     } catch (err) {
       console.error("Error fetching timeline:", err);
     } finally {
       setLoading(false);
     }
-  }, [selectedDate]);
+  }, [selectedDate, user?.id]);
 
   useEffect(() => {
     fetchTimeline();

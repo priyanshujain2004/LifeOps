@@ -261,6 +261,30 @@ export interface Database {
           }
         ];
       };
+      user_roles: {
+        Row: {
+          id: string;
+          user_id: string;
+          role: 'user' | 'superadmin';
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          role?: 'user' | 'superadmin';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          role?: 'user' | 'superadmin';
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

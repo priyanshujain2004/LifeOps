@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureDatabaseSeeded } from "@/lib/supabase/seeder";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import type { ActivityType } from "@/features/activities/types";
 import { DEFAULT_ACTIVITY_TYPES } from "@/features/activities/types/seedDefaults";
 import type { LocationRow } from "@/features/trips/types";
@@ -10,6 +12,7 @@ import { toast } from "sonner";
 import { appMemoryCache } from "@/lib/cache";
 
 export function useSettings() {
+  const { user } = useAuth();
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
     appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
   );
@@ -19,16 +22,19 @@ export function useSettings() {
   const [loading, setLoading] = useState(!appMemoryCache.hasLoadedSettings);
 
   const fetchConfig = useCallback(async () => {
+    if (!user?.id) return;
     if (!appMemoryCache.hasLoadedSettings) {
       setLoading(true);
     }
     try {
+      await ensureDatabaseSeeded(user.id);
       const supabase = getSupabaseBrowserClient();
 
       // Fetch activity types
       const { data: typesData } = await supabase
         .from("activity_types")
         .select("*")
+        .eq("user_id", user.id)
         .order("sort_order", { ascending: true });
 
       const resolvedTypes = (typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
@@ -39,6 +45,7 @@ export function useSettings() {
       const { data: locsData } = await supabase
         .from("locations")
         .select("*")
+        .eq("user_id", user.id)
         .order("name", { ascending: true });
 
       const resolvedLocs = (locsData && locsData.length > 0) ? locsData : (appMemoryCache.locations || DEFAULT_LOCATIONS);
@@ -50,7 +57,7 @@ export function useSettings() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchConfig();
@@ -58,13 +65,14 @@ export function useSettings() {
 
   // Activity Types CRUD
   const saveActivityType = async (type: Partial<ActivityType> & { name: string; category: any }) => {
+    if (!user?.id) return;
     const isNew = !type.id || type.id.startsWith("new-");
     const tempId = isNew ? `custom-${Date.now()}` : type.id!;
     const nowIso = new Date().toISOString();
 
     const record: ActivityType = {
       id: tempId,
-      user_id: "current-user",
+      user_id: user.id,
       name: type.name,
       category: type.category,
       is_paired: type.is_paired ?? false,
@@ -101,7 +109,7 @@ export function useSettings() {
         const { data } = await supabase
           .from("activity_types")
           .insert({
-            user_id: "demo-user",
+            user_id: user.id,
             name: record.name,
             category: record.category,
             is_paired: record.is_paired,
@@ -192,13 +200,14 @@ export function useSettings() {
 
   // Locations CRUD
   const saveLocation = async (loc: Partial<LocationRow> & { name: string; type: any }) => {
+    if (!user?.id) return;
     const isNew = !loc.id || loc.id.startsWith("new-");
     const tempId = isNew ? `loc-${Date.now()}` : loc.id!;
     const nowIso = new Date().toISOString();
 
     const record: LocationRow = {
       id: tempId,
-      user_id: "current-user",
+      user_id: user.id,
       name: loc.name,
       type: loc.type,
       address: loc.address || null,
@@ -227,7 +236,7 @@ export function useSettings() {
       if (isNew) {
         const { data } = await supabase
           .from("locations")
-          .insert({ user_id: "demo-user", name: record.name, type: record.type, address: record.address, active: record.active })
+          .insert({ user_id: user.id, name: record.name, type: record.type, address: record.address, active: record.active })
           .select()
           .single();
         if (data) {

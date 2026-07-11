@@ -79,13 +79,13 @@ export function TripList({ trips, onEndTrip }: TripListProps) {
                   {trip.arrived_at && (
                     <span>Arrived: {formatIST(trip.arrived_at, "hh:mm a")}</span>
                   )}
-                  <span className="text-indigo-300 font-semibold bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-800/50">
+                  <span className="text-indigo-600 dark:text-indigo-300 font-semibold bg-indigo-50 dark:bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800/50">
                     ⏱ {durationStr}
                   </span>
                 </div>
 
                 {trip.notes && (
-                  <p className="text-xs text-slate-400 italic bg-slate-950/50 p-2 rounded-lg border border-slate-800 mt-1">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-950/50 p-2 rounded-lg border border-slate-200 dark:border-slate-800 mt-1">
                     &quot;{trip.notes}&quot;
                   </p>
                 )}
@@ -103,9 +103,9 @@ export function TripList({ trips, onEndTrip }: TripListProps) {
                 ) : (
                   <Link
                     href={`/expenses?trip_id=${trip.id}&reimbursable=${trip.reimbursable}`}
-                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-700"
+                    className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-300 dark:border-slate-700"
                   >
-                    <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                    <DollarSign className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span>Attach Expense</span>
                   </Link>
                 )}

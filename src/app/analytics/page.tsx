@@ -89,7 +89,7 @@ export default function AnalyticsPage() {
 
       {/* Main Stacked Utilization Chart */}
       {loading ? (
-        <div className="h-80 rounded-3xl bg-slate-800/40 animate-pulse border border-slate-800" />
+        <div className="h-80 rounded-3xl bg-slate-200/70 dark:bg-slate-800/40 animate-pulse border border-slate-300 dark:border-slate-800" />
       ) : (
         <TimeUtilizationChart data={timeUtilizationData} />
       )}
@@ -98,8 +98,8 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {loading ? (
           <>
-            <div className="h-80 rounded-3xl bg-slate-800/40 animate-pulse border border-slate-800" />
-            <div className="h-80 rounded-3xl bg-slate-800/40 animate-pulse border border-slate-800" />
+            <div className="h-80 rounded-3xl bg-slate-200/70 dark:bg-slate-800/40 animate-pulse border border-slate-300 dark:border-slate-800" />
+            <div className="h-80 rounded-3xl bg-slate-200/70 dark:bg-slate-800/40 animate-pulse border border-slate-300 dark:border-slate-800" />
           </>
         ) : (
           <>

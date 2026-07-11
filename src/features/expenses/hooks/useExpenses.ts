@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureDatabaseSeeded } from "@/lib/supabase/seeder";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { useAppStore } from "@/store/useAppStore";
 import type { ExpenseRow, ExpenseCategory } from "../types";
 import type { TripRow } from "@/features/trips/types";
@@ -10,22 +12,26 @@ import { toast } from "sonner";
 import { appMemoryCache } from "@/lib/cache";
 
 export function useExpenses() {
+  const { user } = useAuth();
   const [expenses, setExpenses] = useState<ExpenseRow[]>(appMemoryCache.expenses || []);
   const [trips, setTrips] = useState<TripRow[]>(appMemoryCache.trips || []);
   const [loading, setLoading] = useState(!appMemoryCache.hasLoadedExpenses);
   const { isOffline, activeTrip, updatePendingCount } = useAppStore();
 
   const fetchExpensesAndTrips = useCallback(async () => {
+    if (!user?.id) return;
     if (!appMemoryCache.hasLoadedExpenses) {
       setLoading(true);
     }
     try {
+      await ensureDatabaseSeeded(user.id);
       const supabase = getSupabaseBrowserClient();
 
       // Fetch expenses
       const { data: expData } = await supabase
         .from("expenses")
         .select("*")
+        .eq("user_id", user.id)
         .order("logged_at", { ascending: false });
 
       const resolvedExp = expData || (appMemoryCache.expenses || []);
@@ -38,6 +44,7 @@ export function useExpenses() {
         const { data: tripsData } = await supabase
           .from("trips")
           .select("*")
+          .eq("user_id", user.id)
           .order("departed_at", { ascending: false })
           .limit(20);
 
@@ -53,7 +60,7 @@ export function useExpenses() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchExpensesAndTrips();
@@ -104,6 +111,7 @@ export function useExpenses() {
     activityLogId?: string | null,
     receiptFile?: File | null
   ) => {
+    if (!user?.id) return;
     const nowIso = new Date().toISOString();
     const tempId = `exp-${Date.now()}`;
     let receiptUrl: string | null = null;
@@ -133,7 +141,7 @@ export function useExpenses() {
 
     const newExpense: ExpenseRow = {
       id: tempId,
-      user_id: "current-user",
+      user_id: user.id,
       trip_id: tripId || (activeTrip ? activeTrip.id : null),
       activity_log_id: activityLogId || null,
       category,
@@ -155,7 +163,7 @@ export function useExpenses() {
     if (isOffline) {
       await queueExpense({
         client_temp_id: tempId,
-        user_id: "current-user",
+        user_id: user.id,
         trip_id: tripId || (activeTrip ? activeTrip.id : null),
         activity_log_id: activityLogId || null,
         category,
@@ -172,7 +180,7 @@ export function useExpenses() {
         const { data } = await supabase
           .from("expenses")
           .insert({
-            user_id: "demo-user",
+            user_id: user.id,
             trip_id: tripId || (activeTrip ? activeTrip.id : null),
             activity_log_id: activityLogId || null,
             category,

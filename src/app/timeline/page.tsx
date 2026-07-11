@@ -2,12 +2,14 @@
 
 import React from "react";
 import { useTimeline } from "@/features/timeline/hooks/useTimeline";
+import { useTheme } from "@/components/layout/ThemeProvider";
 import { TimelineEntry } from "@/features/timeline/components/TimelineEntry";
 import { PairedDurationBar } from "@/features/timeline/components/PairedDurationBar";
 import { getTodayIST, formatDuration } from "@/lib/utils";
 import { Calendar as CalendarIcon, Clock, RotateCcw } from "lucide-react";
 
 export default function TimelinePage() {
+  const { theme } = useTheme();
   const { selectedDate, setSelectedDate, logs, activityTypes, trips, loading, updateNote, updateLogMapping, deleteLog } = useTimeline();
 
   const handleJumpToday = () => {
@@ -31,12 +33,15 @@ export default function TimelinePage() {
         {/* Date Picker & Jump Today */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial flex items-center">
-            <CalendarIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
+            <div className="absolute left-3 inset-y-0 flex items-center pointer-events-none z-10">
+              <CalendarIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            </div>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full sm:w-auto rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 pl-9 pr-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 shadow-inner [color-scheme:light] dark:[color-scheme:dark] cursor-pointer"
+              style={{ colorScheme: theme === "dark" ? "dark" : "light" }}
+              className="w-full sm:w-auto rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 pl-9 pr-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 shadow-inner cursor-pointer"
             />
           </div>
 

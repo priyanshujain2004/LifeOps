@@ -14,7 +14,7 @@ export function ModalPortal({
   isOpen,
   onClose,
   children,
-  overlayClassName = "bg-slate-900/40 dark:bg-slate-950/80 backdrop-blur-sm",
+  overlayClassName = "bg-slate-400/30 dark:bg-slate-950/80 backdrop-blur-md",
 }: ModalPortalProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -24,10 +24,13 @@ export function ModalPortal({
 
   useEffect(() => {
     if (!isOpen || !mounted) return;
-    const originalOverflow = document.body.style.overflow;
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
     };
   }, [isOpen, mounted]);
 
@@ -35,15 +38,16 @@ export function ModalPortal({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in ${overlayClassName}`}
+      className={`fixed inset-0 z-[9999] w-screen h-screen flex items-center justify-center p-4 animate-fade-in ${overlayClassName}`}
+      style={{ top: 0, left: 0, right: 0, bottom: 0 }}
       onClick={(e) => {
         if (e.target === e.currentTarget && onClose) {
           onClose();
         }
       }}
     >
-      <div className="w-full max-h-[92vh] overflow-y-auto flex items-center justify-center pointer-events-none">
-        <div className="w-full pointer-events-auto flex justify-center">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto flex items-center justify-center pointer-events-auto">
+        <div className="w-full flex justify-center">
           {children}
         </div>
       </div>

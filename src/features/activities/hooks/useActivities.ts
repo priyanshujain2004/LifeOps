@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureDatabaseSeeded } from "@/lib/supabase/seeder";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { useAppStore } from "@/store/useAppStore";
 import type { ActivityType, ActivityLog } from "../types";
 import { DEFAULT_ACTIVITY_TYPES } from "../types/seedDefaults";
@@ -11,6 +13,7 @@ import { formatIST } from "@/lib/utils";
 import { appMemoryCache } from "@/lib/cache";
 
 export function useActivities() {
+  const { user } = useAuth();
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
     appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
   );
@@ -21,16 +24,19 @@ export function useActivities() {
   const { isOffline, activeTrip, startPairedActivity, endPairedActivity, updatePendingCount } = useAppStore();
 
   const fetchActivities = useCallback(async () => {
+    if (!user?.id) return;
     if (!appMemoryCache.hasLoadedActivities) {
       setLoading(true);
     }
     try {
+      await ensureDatabaseSeeded(user.id);
       const supabase = getSupabaseBrowserClient();
       
       // Fetch user's active activity types
       const { data: typesData, error: typesError } = await supabase
         .from("activity_types")
         .select("*")
+        .eq("user_id", user.id)
         .eq("active", true)
         .order("sort_order", { ascending: true });
 
@@ -45,6 +51,7 @@ export function useActivities() {
       const { data: logsData, error: logsError } = await supabase
         .from("activity_logs")
         .select("*")
+        .eq("user_id", user.id)
         .gte("logged_at", startOfDay.toISOString())
         .order("logged_at", { ascending: false });
 
@@ -57,7 +64,7 @@ export function useActivities() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchActivities();
@@ -78,7 +85,7 @@ export function useActivities() {
     // Create optimistic log record
     const newLog: ActivityLog = {
       id: tempId,
-      user_id: "current-user",
+      user_id: user?.id || "",
       activity_type_id: targetActivityId,
       logged_at: nowIso,
       notes: notes || null,
@@ -108,11 +115,13 @@ export function useActivities() {
       toast.success(`Logged: ${targetActivityName} at ${formatIST(nowIso, "hh:mm a")}`);
     }
 
+    if (!user?.id) return;
+
     // Save to server or offline queue
     if (isOffline) {
       await queueActivityLog({
         client_temp_id: tempId,
-        user_id: "current-user",
+        user_id: user.id,
         activity_type_id: targetActivityId,
         logged_at: nowIso,
         notes: notes || null,
@@ -126,7 +135,7 @@ export function useActivities() {
         const { data, error } = await supabase
           .from("activity_logs")
           .insert({
-            user_id: "demo-user",
+            user_id: user.id,
             activity_type_id: targetActivityId,
             logged_at: nowIso,
             notes: notes || null,
@@ -139,7 +148,7 @@ export function useActivities() {
           console.warn("Server insert failed, queuing offline:", error);
           await queueActivityLog({
             client_temp_id: tempId,
-            user_id: "current-user",
+            user_id: user.id,
             activity_type_id: targetActivityId,
             logged_at: nowIso,
             notes: notes || null,
@@ -177,7 +186,7 @@ export function useActivities() {
 
     const newLog: ActivityLog = {
       id: tempId,
-      user_id: "current-user",
+      user_id: user?.id || "",
       activity_type_id: endTypeId,
       logged_at: nowIso,
       notes: notes || null,
@@ -195,10 +204,12 @@ export function useActivities() {
     endPairedActivity(startActivityId);
     toast.success(`Completed: ${pairLabel} at ${formatIST(nowIso, "hh:mm a")}`);
 
+    if (!user?.id) return;
+
     if (isOffline) {
       await queueActivityLog({
         client_temp_id: tempId,
-        user_id: "current-user",
+        user_id: user.id,
         activity_type_id: endTypeId,
         logged_at: nowIso,
         notes: notes || null,
@@ -212,7 +223,7 @@ export function useActivities() {
         const { data } = await supabase
           .from("activity_logs")
           .insert({
-            user_id: "demo-user",
+            user_id: user.id,
             activity_type_id: endTypeId,
             logged_at: nowIso,
             notes: notes || null,
