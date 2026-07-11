@@ -6,7 +6,6 @@ import type { ActivityLog, ActivityType } from "@/features/activities/types";
 import { DEFAULT_ACTIVITY_TYPES } from "@/features/activities/types/seedDefaults";
 import type { TripRow } from "@/features/trips/types";
 import type { ExpenseRow } from "@/features/expenses/types";
-import { DEFAULT_EXPENSES } from "@/features/expenses/types/seedExpenses";
 import { formatIST } from "@/lib/utils";
 
 export interface DayUtilizationData {
@@ -37,7 +36,7 @@ export function useAnalyticsData(days: number = 7) {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>(DEFAULT_ACTIVITY_TYPES);
   const [trips, setTrips] = useState<TripRow[]>([]);
-  const [expenses, setExpenses] = useState<ExpenseRow[]>(DEFAULT_EXPENSES);
+  const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchAllData = useCallback(async () => {
@@ -92,7 +91,7 @@ export function useAnalyticsData(days: number = 7) {
       if (expData && expData.length > 0) {
         setExpenses(expData);
       } else {
-        setExpenses(DEFAULT_EXPENSES);
+        setExpenses([]);
       }
     } catch (err) {
       console.error("Error loading analytics data:", err);
@@ -116,18 +115,16 @@ export function useAnalyticsData(days: number = 7) {
       const dateKey = formatIST(d.toISOString(), "yyyy-MM-dd");
       const dateLabel = formatIST(d.toISOString(), "EEE dd MMM");
 
-      // Give realistic demo distribution for empty/dev days so chart looks stunning immediately
-      const isDemo = logs.length === 0 && i < 5;
       dayMap.set(dateKey, {
         dateLabel,
-        WORK: isDemo ? Number((5 + Math.random() * 3).toFixed(1)) : 0,
-        COMMUTE: isDemo ? Number((1 + Math.random() * 1.5).toFixed(1)) : 0,
-        SITE_VISIT: isDemo ? Number((1 + Math.random() * 2).toFixed(1)) : 0,
-        BREAK: isDemo ? Number((0.5 + Math.random() * 0.5).toFixed(1)) : 0,
-        MEAL: isDemo ? Number((1 + Math.random() * 0.5).toFixed(1)) : 0,
-        SLEEP: isDemo ? Number((6.5 + Math.random() * 1.5).toFixed(1)) : 0,
-        PERSONAL: isDemo ? Number((1 + Math.random() * 1).toFixed(1)) : 0,
-        FREE_TIME: isDemo ? Number((2 + Math.random() * 2).toFixed(1)) : 0,
+        WORK: 0,
+        COMMUTE: 0,
+        SITE_VISIT: 0,
+        BREAK: 0,
+        MEAL: 0,
+        SLEEP: 0,
+        PERSONAL: 0,
+        FREE_TIME: 0,
       });
     }
 
@@ -141,21 +138,10 @@ export function useAnalyticsData(days: number = 7) {
         logsByDate.get(dateKey)!.push(log);
       });
 
-      logsByDate.forEach((dayLogs, dateKey) => {
-        const entry = dayMap.get(dateKey);
+      logsByDate.forEach((dayLogs, dKey) => {
+        const entry = dayMap.get(dKey);
         if (!entry) return;
 
-        // Reset demo values when we have real logs on that day
-        entry.WORK = 0;
-        entry.COMMUTE = 0;
-        entry.SITE_VISIT = 0;
-        entry.BREAK = 0;
-        entry.MEAL = 0;
-        entry.SLEEP = 0;
-        entry.PERSONAL = 0;
-        entry.FREE_TIME = 0;
-
-        // Calculate paired durations
         let totalLoggedHours = 0;
         for (let i = 0; i < dayLogs.length - 1; i++) {
           const l1 = dayLogs[i];
@@ -191,10 +177,6 @@ export function useAnalyticsData(days: number = 7) {
         if (t.origin_label.toLowerCase().includes("office") || t.destination_label.toLowerCase().includes("office")) officeCount++;
         if (t.origin_label.toLowerCase().includes("site") || t.destination_label.toLowerCase().includes("site")) siteCount += 2;
       });
-    } else {
-      homeCount = 12;
-      officeCount = 18;
-      siteCount = 24;
     }
 
     return [

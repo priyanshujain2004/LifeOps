@@ -4,13 +4,12 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/useAppStore";
 import type { ExpenseRow, ExpenseCategory } from "../types";
-import { DEFAULT_EXPENSES } from "../types/seedExpenses";
 import type { TripRow } from "@/features/trips/types";
 import { queueExpense } from "@/lib/offline/idb";
 import { toast } from "sonner";
 
 export function useExpenses() {
-  const [expenses, setExpenses] = useState<ExpenseRow[]>(DEFAULT_EXPENSES);
+  const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
   const [trips, setTrips] = useState<TripRow[]>([]);
   const [loading, setLoading] = useState(true);
   const { isOffline, activeTrip, updatePendingCount } = useAppStore();
@@ -28,7 +27,7 @@ export function useExpenses() {
       if (expData && expData.length > 0) {
         setExpenses(expData);
       } else {
-        setExpenses(DEFAULT_EXPENSES);
+        setExpenses([]);
       }
 
       // Fetch trips for linking dropdown
