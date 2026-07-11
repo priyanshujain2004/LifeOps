@@ -74,6 +74,7 @@ export function Header() {
             <button
               onClick={() => triggerSync()}
               disabled={isSyncing}
+              title="Click to immediately sync queued logs to cloud"
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-500/25 transition-all"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
@@ -89,6 +90,7 @@ export function Header() {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
+            title={`Switch to ${theme === "dark" ? "Light" : "Dark"} mode`}
             className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500/50 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white transition-all shadow-sm"
             aria-label="Toggle theme"
           >

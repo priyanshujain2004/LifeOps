@@ -24,25 +24,25 @@ export default function AnalyticsPage() {
   } = useAnalyticsData(days);
 
   return (
-    <div className="space-y-6 pb-8 animate-fade-in">
+    <div className="space-y-6 pb-8">
       {/* Header Banner & Timeframe Switcher */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 border border-purple-500/40 shadow-xl text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-50 via-slate-50 to-indigo-50 dark:from-purple-950 dark:via-slate-900 dark:to-indigo-950 border border-purple-200 dark:border-purple-500/40 shadow-lg dark:shadow-xl text-slate-900 dark:text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider mb-2 border border-purple-500/30">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-bold uppercase tracking-wider mb-2 border border-purple-300 dark:border-purple-500/30">
             <Sparkles className="w-3.5 h-3.5" /> Intelligence & Insights
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight">Time Utilization & Mobility Analytics</h1>
-          <p className="text-xs text-purple-200/80 mt-1 max-w-md">
+          <p className="text-xs text-slate-600 dark:text-purple-200/80 mt-1 max-w-md">
             Interactive metrics calculating productive work ratios, commute waste, rest windows, unlogged free time gaps, and reimbursable travel trends.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center bg-white dark:bg-slate-950/80 p-1 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm">
             <button
               onClick={() => setDays(7)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                days === 7 ? "bg-purple-600 text-white shadow" : "text-slate-400 hover:text-white"
+                days === 7 ? "bg-purple-600 text-white shadow" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Past 7 Days
@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
             <button
               onClick={() => setDays(30)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                days === 30 ? "bg-purple-600 text-white shadow" : "text-slate-400 hover:text-white"
+                days === 30 ? "bg-purple-600 text-white shadow" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Past 30 Days
@@ -60,19 +60,19 @@ export default function AnalyticsPage() {
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => exportActivitiesToCSV(logs, activityTypes, trips)}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1 border border-slate-700 transition-colors"
+              className="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1 border border-slate-300 dark:border-slate-700 transition-colors shadow-sm"
               title="Export Activities & Trips CSV"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-400" />
+              <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               <span>Activities CSV</span>
             </button>
 
             <button
               onClick={() => exportExpensesToCSV(expenses)}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1 border border-slate-700 transition-colors"
+              className="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1 border border-slate-300 dark:border-slate-700 transition-colors shadow-sm"
               title="Export Expenses Ledger CSV"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>Expenses CSV</span>
             </button>
           </div>

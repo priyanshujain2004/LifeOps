@@ -5,6 +5,7 @@ import { EXPENSE_CATEGORIES, type ExpenseCategory } from "../types";
 import type { TripRow } from "@/features/trips/types";
 import { useAppStore } from "@/store/useAppStore";
 import { DollarSign, Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 interface AddExpenseModalProps {
   isOpen: boolean;
@@ -91,8 +92,10 @@ export function AddExpenseModal({
     onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+    <ModalPortal isOpen={isOpen} onClose={onClose}>
       <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl text-slate-900 dark:text-slate-100 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
@@ -248,6 +251,6 @@ export function AddExpenseModal({
           </div>
         </form>
       </div>
-    </div>
+    </ModalPortal>
   );
 }

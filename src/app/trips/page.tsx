@@ -12,15 +12,15 @@ export default function TripsPage() {
   const [showSavedLocations, setShowSavedLocations] = useState(false);
 
   return (
-    <div className="space-y-6 pb-6 animate-fade-in">
+    <div className="space-y-6 pb-6">
       {/* Header Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-indigo-900 via-slate-900 to-purple-950 border border-indigo-500/40 shadow-xl text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-indigo-50 via-purple-50 to-slate-100 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950 border border-indigo-200 dark:border-indigo-500/40 shadow-lg dark:shadow-xl text-slate-900 dark:text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2 border border-indigo-500/30">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2 border border-indigo-300 dark:border-indigo-500/30">
             <Sparkles className="w-3.5 h-3.5" /> Mobility & Travel Tracking
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight">Trip Mode & Reimbursability</h1>
-          <p className="text-xs text-indigo-200/80 mt-1 max-w-md">
+          <p className="text-xs text-slate-600 dark:text-indigo-200/80 mt-1 max-w-md">
             Track origin to destination sessions (`Home ➔ Site`, `Office ➔ Site`, etc.) with instant hardcoded rule verification for expense allowances.
           </p>
         </div>
@@ -28,9 +28,9 @@ export default function TripsPage() {
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setShowSavedLocations(!showSavedLocations)}
-            className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors flex items-center justify-center gap-1.5"
+            className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
           >
-            <MapPin className="w-4 h-4 text-rose-400" />
+            <MapPin className="w-4 h-4 text-rose-500 dark:text-rose-400" />
             <span>{locations.length} Locations</span>
           </button>
 

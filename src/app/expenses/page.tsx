@@ -23,55 +23,55 @@ function ExpensesContent() {
   });
 
   return (
-    <div className="space-y-6 pb-6 animate-fade-in">
+    <div className="space-y-6 pb-6">
       {/* Monthly Summary Cards */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 border border-emerald-500/40 shadow-xl text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-50 via-slate-50 to-indigo-50 dark:from-emerald-950 dark:via-slate-900 dark:to-indigo-950 border border-emerald-200 dark:border-emerald-500/40 shadow-lg dark:shadow-xl text-slate-900 dark:text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-colors">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider border border-emerald-300 dark:border-emerald-500/30">
             <PieChart className="w-3.5 h-3.5" /> Current Month Summary
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight font-mono text-emerald-400">
+          <h1 className="text-3xl font-extrabold tracking-tight font-mono text-emerald-600 dark:text-emerald-400">
             ₹{monthlySummary.totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </h1>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-600 dark:text-slate-300">
             Total recorded spend across <span className="font-bold">{monthlySummary.count}</span> items this month
           </p>
         </div>
 
         {/* Reimbursable vs Personal Split */}
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full md:w-auto">
-          <div className="flex-1 p-3.5 rounded-2xl bg-white/10 dark:bg-slate-900/80 border border-emerald-500/30 min-w-[150px]">
-            <span className="text-[10px] uppercase font-bold text-emerald-400 flex items-center gap-1">
+          <div className="flex-1 p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-emerald-300 dark:border-emerald-500/30 min-w-[150px] shadow-sm">
+            <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" /> Reimbursable
             </span>
-            <div className="text-lg font-mono font-bold text-white mt-1">
+            <div className="text-lg font-mono font-bold text-slate-900 dark:text-white mt-1">
               ₹{monthlySummary.reimbursableAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
               <div
                 className="bg-emerald-500 h-full rounded-full transition-all duration-500"
                 style={{ width: `${monthlySummary.reimbursablePct}%` }}
               />
             </div>
-            <span className="text-[10px] font-mono text-slate-300 dark:text-slate-400 block text-right mt-1 font-bold">
+            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 block text-right mt-1 font-bold">
               {monthlySummary.reimbursablePct}% of total
             </span>
           </div>
 
-          <div className="flex-1 p-3.5 rounded-2xl bg-white/10 dark:bg-slate-900/80 border border-slate-700 min-w-[150px]">
-            <span className="text-[10px] uppercase font-bold text-slate-300 dark:text-slate-400 flex items-center gap-1">
+          <div className="flex-1 p-3.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 min-w-[150px] shadow-sm">
+            <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1">
               <AlertCircle className="w-3 h-3" /> Personal / Non-Reimb
             </span>
-            <div className="text-lg font-mono font-bold text-white mt-1">
+            <div className="text-lg font-mono font-bold text-slate-900 dark:text-white mt-1">
               ₹{monthlySummary.nonReimbursableAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
               <div
                 className="bg-slate-400 dark:bg-slate-500 h-full rounded-full transition-all duration-500"
                 style={{ width: `${100 - monthlySummary.reimbursablePct}%` }}
               />
             </div>
-            <span className="text-[10px] font-mono text-slate-300 dark:text-slate-400 block text-right mt-1 font-bold">
+            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 block text-right mt-1 font-bold">
               {100 - monthlySummary.reimbursablePct}% of total
             </span>
           </div>

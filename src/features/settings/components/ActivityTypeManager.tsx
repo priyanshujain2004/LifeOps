@@ -250,7 +250,7 @@ export function ActivityTypeManager({ activityTypes, onSave, onDelete, onMoveSor
                 <button
                   onClick={() => onMoveSort(act.id, "UP")}
                   disabled={idx === 0}
-                  className="p-0.5 rounded bg-slate-800 text-slate-400 hover:text-white disabled:opacity-30"
+                  className="p-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30"
                   title="Move Up"
                 >
                   <ArrowUp className="w-3 h-3" />
@@ -258,7 +258,7 @@ export function ActivityTypeManager({ activityTypes, onSave, onDelete, onMoveSor
                 <button
                   onClick={() => onMoveSort(act.id, "DOWN")}
                   disabled={idx === activityTypes.length - 1}
-                  className="p-0.5 rounded bg-slate-800 text-slate-400 hover:text-white disabled:opacity-30"
+                  className="p-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30"
                   title="Move Down"
                 >
                   <ArrowDown className="w-3 h-3" />
@@ -267,14 +267,14 @@ export function ActivityTypeManager({ activityTypes, onSave, onDelete, onMoveSor
 
               <button
                 onClick={() => startEdit(act)}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
+                className="p-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
                 title="Edit"
               >
                 <Edit3 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onDelete(act.id)}
-                className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-red-500/20 text-slate-400 hover:text-red-400"
+                className="p-1.5 rounded-lg bg-slate-200 dark:bg-slate-800/60 hover:bg-red-500/20 text-slate-700 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400"
                 title="Delete"
               >
                 <Trash2 className="w-3.5 h-3.5" />

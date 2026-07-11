@@ -43,6 +43,7 @@ export function ActivityButton({
   if (activePairSession && activity.pair_label) {
     return (
       <div
+        title={`End ${activity.pair_label} session (tap to record exact stop time)`}
         className="group relative flex flex-col justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer shadow-lg overflow-hidden animate-fade-in bg-white dark:bg-slate-900 border-indigo-500/80 shadow-indigo-500/20"
         onClick={() => onLogPairEnd(activity.id, activity.pair_label!)}
       >
@@ -72,6 +73,7 @@ export function ActivityButton({
   // Normal / Start state button
   return (
     <div
+      title={`Tap to instantly log "${activity.name}" at current time`}
       className="group relative flex flex-col justify-between p-3.5 rounded-2xl border bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800/80 hover:border-indigo-500/60 dark:hover:border-indigo-500/60 transition-all cursor-pointer shadow-sm hover:shadow-md hover:scale-[1.01] overflow-hidden select-none"
       onClick={() => onLogDirect(activity)}
     >

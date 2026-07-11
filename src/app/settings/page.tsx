@@ -23,25 +23,25 @@ export default function SettingsPage() {
   } = useSettings();
 
   return (
-    <div className="space-y-6 pb-8 animate-fade-in">
+    <div className="space-y-6 pb-8">
       {/* Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 shadow-xl text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-50 via-indigo-50 to-slate-100 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg dark:shadow-xl text-slate-900 dark:text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2 border border-indigo-500/30">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2 border border-indigo-300 dark:border-indigo-500/30">
             <Sliders className="w-3.5 h-3.5" /> App Configuration & Customization
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight">Flexible Configuration Studio</h1>
-          <p className="text-xs text-slate-300 mt-1 max-w-lg">
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-lg">
             Nothing is hard-coded. Add, sort, and customize your activity buttons, start/end pairs, expense rules, and saved mobility locations.
           </p>
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center bg-slate-950 p-1.5 rounded-2xl border border-slate-800 w-full sm:w-auto overflow-x-auto">
+        <div className="flex items-center bg-white dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-300 dark:border-slate-800 w-full sm:w-auto overflow-x-auto shadow-sm">
           <button
             onClick={() => setActiveTab("ACTIVITIES")}
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${
-              activeTab === "ACTIVITIES" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-white"
+              activeTab === "ACTIVITIES" ? "bg-indigo-600 text-white shadow" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" /> Activities ({activityTypes.length})
@@ -49,7 +49,7 @@ export default function SettingsPage() {
           <button
             onClick={() => setActiveTab("LOCATIONS")}
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${
-              activeTab === "LOCATIONS" ? "bg-rose-600 text-white shadow" : "text-slate-400 hover:text-white"
+              activeTab === "LOCATIONS" ? "bg-rose-600 text-white shadow" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <MapPin className="w-3.5 h-3.5" /> Locations ({locations.length})
@@ -57,7 +57,7 @@ export default function SettingsPage() {
           <button
             onClick={() => setActiveTab("BACKUP")}
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${
-              activeTab === "BACKUP" ? "bg-emerald-600 text-white shadow" : "text-slate-400 hover:text-white"
+              activeTab === "BACKUP" ? "bg-emerald-600 text-white shadow" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <Database className="w-3.5 h-3.5" /> Backup

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { TRIP_TYPE_OPTIONS, type TripType, type LocationRow } from "../types";
 import { computeReimbursability } from "../utils/reimbursability";
 import { Navigation, Plus, CheckCircle2, XCircle, MapPin, X } from "lucide-react";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 interface StartTripModalProps {
   isOpen: boolean;
@@ -71,7 +72,7 @@ export function StartTripModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+    <ModalPortal isOpen={isOpen} onClose={onClose}>
       <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl text-slate-900 dark:text-slate-100 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
@@ -260,6 +261,6 @@ export function StartTripModal({
           </div>
         </form>
       </div>
-    </div>
+    </ModalPortal>
   );
 }

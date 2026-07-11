@@ -52,30 +52,30 @@ export function ActiveTripBanner() {
   };
 
   return (
-    <div className="bg-gradient-to-r from-indigo-900/90 via-slate-900 to-indigo-950 border-b border-indigo-500/40 text-white px-4 py-3 shadow-lg backdrop-blur-md">
+    <div className="bg-gradient-to-r from-indigo-50/95 via-purple-50/95 to-slate-100/95 dark:from-indigo-900/90 dark:via-slate-900 dark:to-indigo-950 border-b border-indigo-200 dark:border-indigo-500/40 text-slate-900 dark:text-white px-4 py-3 shadow-lg backdrop-blur-md transition-colors">
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-500/30 border border-indigo-400/40 flex items-center justify-center text-indigo-300 animate-pulse">
+          <div className="w-8 h-8 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/30 border border-indigo-300 dark:border-indigo-400/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 animate-pulse">
             <Navigation className="w-4 h-4" />
           </div>
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-indigo-300">
+            <div className="flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-indigo-700 dark:text-indigo-300">
               <span>Active Trip • {activeTrip.trip_type.replace(/_/g, " ")}</span>
               {activeTrip.reimbursable ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px]">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[10px]">
                   <CheckCircle2 className="w-3 h-3" /> Reimbursable
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 text-[10px]">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px]">
                   Personal
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2 font-bold text-sm text-slate-100 mt-0.5">
+            <div className="flex items-center gap-2 font-bold text-sm text-slate-900 dark:text-slate-100 mt-0.5">
               <span>{activeTrip.origin_label}</span>
-              <ArrowRight className="w-3.5 h-3.5 text-indigo-400" />
+              <ArrowRight className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
               <span>{activeTrip.destination_label}</span>
-              <span className="ml-1 text-xs font-mono font-normal text-indigo-200 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-500/30">
+              <span className="ml-1 text-xs font-mono font-normal text-indigo-700 dark:text-indigo-200 bg-indigo-100/80 dark:bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-300 dark:border-indigo-500/30">
                 ⏱ {elapsed}
               </span>
             </div>

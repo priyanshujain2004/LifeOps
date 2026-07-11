@@ -5,6 +5,7 @@ import type { ExpenseRow } from "../types";
 import { EXPENSE_CATEGORIES } from "../types";
 import { formatIST } from "@/lib/utils";
 import { DollarSign, CheckCircle2, Trash2, FileText, ExternalLink, X } from "lucide-react";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 interface ExpenseListProps {
   expenses: ExpenseRow[];
@@ -111,10 +112,7 @@ export function ExpenseList({ expenses, onDeleteExpense }: ExpenseListProps) {
 
       {/* Receipt Preview Dialog */}
       {selectedReceipt && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in"
-          onClick={() => setSelectedReceipt(null)}
-        >
+        <ModalPortal isOpen={!!selectedReceipt} onClose={() => setSelectedReceipt(null)}>
           <div className="relative max-w-2xl max-h-[85vh] rounded-2xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-3">
               <h4 className="font-bold text-sm text-slate-900 dark:text-slate-200 flex items-center gap-1.5">
@@ -139,7 +137,7 @@ export function ExpenseList({ expenses, onDeleteExpense }: ExpenseListProps) {
               </a>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

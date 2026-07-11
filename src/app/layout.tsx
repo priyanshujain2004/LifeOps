@@ -5,7 +5,8 @@ import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { Header } from "@/components/layout/Header";
 import { ActiveTripBanner } from "@/components/layout/ActiveTripBanner";
 import { BottomNav } from "@/components/layout/BottomNav";
-import { Toaster } from "sonner";
+import { PageTransition } from "@/components/layout/PageTransition";
+import { ThemeAwareToaster } from "@/components/layout/ThemeAwareToaster";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,9 +48,11 @@ export default function RootLayout({
         <ThemeProvider>
           <Header />
           <ActiveTripBanner />
-          <main className="max-w-4xl mx-auto px-4 py-6">{children}</main>
+          <main className="max-w-4xl mx-auto px-4 py-6 overflow-x-hidden">
+            <PageTransition>{children}</PageTransition>
+          </main>
           <BottomNav />
-          <Toaster position="top-center" richColors theme="dark" />
+          <ThemeAwareToaster />
         </ThemeProvider>
       </body>
     </html>

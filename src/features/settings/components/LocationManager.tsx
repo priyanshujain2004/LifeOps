@@ -154,14 +154,14 @@ export function LocationManager({ locations, onSave, onDelete }: LocationManager
             <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={() => startEdit(loc)}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
+                className="p-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
                 title="Edit Location"
               >
                 <Edit3 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onDelete(loc.id)}
-                className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-red-500/20 text-slate-400 hover:text-red-400"
+                className="p-1.5 rounded-lg bg-slate-200 dark:bg-slate-800/60 hover:bg-red-500/20 text-slate-700 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400"
                 title="Delete Location"
               >
                 <Trash2 className="w-3.5 h-3.5" />

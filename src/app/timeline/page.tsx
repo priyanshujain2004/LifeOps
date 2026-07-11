@@ -15,7 +15,7 @@ export default function TimelinePage() {
   };
 
   return (
-    <div className="space-y-6 pb-6 animate-fade-in">
+    <div className="space-y-6 pb-6">
       {/* Date Bar & Header */}
       <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -30,13 +30,13 @@ export default function TimelinePage() {
 
         {/* Date Picker & Jump Today */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 sm:flex-initial">
-            <CalendarIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400 absolute left-3 top-3 pointer-events-none" />
+          <div className="relative flex-1 sm:flex-initial flex items-center">
+            <CalendarIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full sm:w-auto rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 pl-9 pr-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 shadow-inner"
+              className="w-full sm:w-auto rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 pl-9 pr-3 py-2 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 shadow-inner [color-scheme:light] dark:[color-scheme:dark] cursor-pointer"
             />
           </div>
 

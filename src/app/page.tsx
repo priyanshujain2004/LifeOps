@@ -18,7 +18,7 @@ export default function HomePage() {
   const activePairsList = Object.values(activePairedActivities);
 
   return (
-    <div className="space-y-6 pb-6 animate-fade-in">
+    <div className="space-y-6 pb-6">
       {/* Quick Status Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
