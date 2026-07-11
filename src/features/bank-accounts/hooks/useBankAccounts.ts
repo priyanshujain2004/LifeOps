@@ -127,9 +127,10 @@ export function useBankAccounts() {
 
       const { data, error } = await supabase.from("bank_accounts").insert(insertPayload).select().single();
       if (error) {
-        // If column error during insert (e.g., active or currency not in schema yet), retry with basic safe fields
-        if (error.code === "42703") {
-          const fallbackPayload = {
+        // If column error during insert (e.g., PGRST204 / 42703 when account_number, active, or currency not in schema yet), retry with core safe fields
+        const isColumnErr = error.code === "42703" || error.code === "PGRST204" || String(error.message || "").toLowerCase().includes("column") || String(error.message || "").toLowerCase().includes("could not find");
+        if (isColumnErr) {
+          const fallbackPayload: any = {
             user_id: targetUserId,
             account_name: payload.account_name,
             account_type: payload.account_type,
@@ -137,7 +138,22 @@ export function useBankAccounts() {
             is_default: payload.is_default || false,
           };
           const fallbackRes = await supabase.from("bank_accounts").insert(fallbackPayload).select().single();
-          if (fallbackRes.error) throw fallbackRes.error;
+          if (fallbackRes.error) {
+            const isSecondColErr = fallbackRes.error.code === "42703" || fallbackRes.error.code === "PGRST204" || String(fallbackRes.error.message || "").toLowerCase().includes("column") || String(fallbackRes.error.message || "").toLowerCase().includes("could not find");
+            if (isSecondColErr) {
+              const minimalPayload = {
+                user_id: targetUserId,
+                account_name: payload.account_name,
+                account_type: payload.account_type,
+              };
+              const minRes = await supabase.from("bank_accounts").insert(minimalPayload).select().single();
+              if (minRes.error) throw minRes.error;
+              toast.success("Bank Account created!");
+              await fetchBankAccounts(true);
+              return minRes.data;
+            }
+            throw fallbackRes.error;
+          }
           toast.success("Bank Account created!");
           await fetchBankAccounts(true);
           return fallbackRes.data;
@@ -176,11 +192,13 @@ export function useBankAccounts() {
         .eq("user_id", targetUserId);
 
       if (error) {
-        if (error.code === "42703") {
+        const isColumnErr = error.code === "42703" || error.code === "PGRST204" || String(error.message || "").toLowerCase().includes("column") || String(error.message || "").toLowerCase().includes("could not find");
+        if (isColumnErr) {
           const safeUpdates: any = { ...updates };
           delete safeUpdates.active;
           delete safeUpdates.currency;
           delete safeUpdates.account_number;
+          delete safeUpdates.notes;
           const retryRes = await supabase.from("bank_accounts").update(safeUpdates).eq("id", id).eq("user_id", targetUserId);
           if (retryRes.error) throw retryRes.error;
           toast.success("Account updated successfully!");
