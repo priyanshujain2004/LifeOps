@@ -9,10 +9,8 @@
 -- This immediately fixes "Invalid login credentials" / "Email not confirmed"
 -- for all users who previously signed up (like test accounts).
 UPDATE auth.users
-SET 
-  email_confirmed_at = COALESCE(email_confirmed_at, now()),
-  confirmed_at = COALESCE(confirmed_at, now())
-WHERE email_confirmed_at IS NULL OR confirmed_at IS NULL;
+SET email_confirmed_at = COALESCE(email_confirmed_at, now())
+WHERE email_confirmed_at IS NULL;
 
 -- 2. ENSURE PROFILES & USER_ROLES TABLES EXIST WITH CLEAN RLS
 CREATE TABLE IF NOT EXISTS public.profiles (
