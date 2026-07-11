@@ -8,7 +8,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOi
 const isPlaceholder = !process.env.NEXT_PUBLIC_SUPABASE_URL || supabaseUrl.includes("placeholder");
 
 const customFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-  // If running locally without Supabase configured yet, instantly resolve in 1ms instead of 4s DNS timeout
+  // If running locally without Supabase configured yet, instantly resolve placeholder
   if (isPlaceholder) {
     return new Response(JSON.stringify([]), {
       status: 200,
@@ -16,31 +16,29 @@ const customFetch = async (input: RequestInfo | URL, init?: RequestInit): Promis
     });
   }
 
-  // If Supabase is configured, add a 3.5s timeout circuit-breaker so network drops don't freeze UI
+  // Preserve headers whether input is a Request object or a string/URL
+  const existingHeaders = input instanceof Request ? input.headers : init?.headers;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3500);
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
     const response = await fetch(input, {
       ...init,
+      headers: existingHeaders || init?.headers,
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
     return response;
   } catch (err) {
     clearTimeout(timeoutId);
-    // Return empty list on timeout/error so app works fast offline
-    return new Response(JSON.stringify([]), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    throw err;
   }
 };
 
 export function getSupabaseBrowserClient() {
   return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
     global: {
-      fetch: customFetch,
+      fetch: isPlaceholder ? customFetch : undefined,
     },
   });
 }
