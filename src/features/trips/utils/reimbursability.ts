@@ -14,24 +14,57 @@ export interface ReimbursableConditions {
   allowed_trip_types?: TripType[];
 }
 
+export type TripReimbursabilityRulesMap = Record<string, boolean>;
+
+export const DEFAULT_REIMBURSABLE_RULES: TripReimbursabilityRulesMap = {
+  OFFICE_TO_SITE: true,
+  SITE_TO_SITE: true,
+  SITE_TO_OFFICE: true,
+  HOME_TO_SITE: true,
+  SITE_TO_HOME: true,
+  HOME_TO_OFFICE: false,
+  OFFICE_TO_HOME: false,
+};
+
+export function getConfiguredReimbursableRules(): TripReimbursabilityRulesMap {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("lifelog_trip_reimbursable_rules");
+      if (stored) {
+        return { ...DEFAULT_REIMBURSABLE_RULES, ...JSON.parse(stored) };
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return { ...DEFAULT_REIMBURSABLE_RULES };
+}
+
+export function saveConfiguredReimbursableRules(rules: TripReimbursabilityRulesMap) {
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("lifelog_trip_reimbursable_rules", JSON.stringify(rules));
+    } catch {
+      // ignore
+    }
+  }
+}
+
 /**
- * Pure function to compute whether a trip is reimbursable based on hardcoded mobility rules.
+ * Pure function to compute whether a trip is reimbursable based on configurable mobility rules.
  * @param tripType The type of trip being undertaken.
+ * @param customRules Optional custom rules override map.
  * @returns boolean True if the trip is reimbursable, False otherwise.
  */
-export function computeReimbursability(tripType: TripType | string): boolean {
-  switch (tripType) {
-    case 'OFFICE_TO_SITE':
-    case 'SITE_TO_SITE':
-    case 'SITE_TO_OFFICE':
-      return true;
-    case 'HOME_TO_OFFICE':
-    case 'OFFICE_TO_HOME':
-    case 'HOME_TO_SITE':
-    case 'SITE_TO_HOME':
-    default:
-      return false;
+export function computeReimbursability(tripType: TripType | string, customRules?: TripReimbursabilityRulesMap | null): boolean {
+  if (customRules && typeof customRules[tripType] === "boolean") {
+    return customRules[tripType];
   }
+  const rules = getConfiguredReimbursableRules();
+  if (typeof rules[tripType] === "boolean") {
+    return rules[tripType];
+  }
+  return DEFAULT_REIMBURSABLE_RULES[tripType] ?? false;
 }
 
 /**

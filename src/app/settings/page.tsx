@@ -4,11 +4,12 @@ import React, { useState } from "react";
 import { useSettings } from "@/features/settings/hooks/useSettings";
 import { ActivityTypeManager } from "@/features/settings/components/ActivityTypeManager";
 import { LocationManager } from "@/features/settings/components/LocationManager";
+import { TripRulesManager } from "@/features/settings/components/TripRulesManager";
 import { BackupRestoreCard } from "@/features/settings/components/BackupRestoreCard";
-import { Sliders, Sparkles, MapPin, Database } from "lucide-react";
+import { Sliders, Sparkles, MapPin, Database, DollarSign } from "lucide-react";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"ACTIVITIES" | "LOCATIONS" | "BACKUP">("ACTIVITIES");
+  const [activeTab, setActiveTab] = useState<"ACTIVITIES" | "LOCATIONS" | "RULES" | "BACKUP">("ACTIVITIES");
   const {
     activityTypes,
     locations,
@@ -55,6 +56,14 @@ export default function SettingsPage() {
             <MapPin className="w-3.5 h-3.5" /> Locations ({locations.length})
           </button>
           <button
+            onClick={() => setActiveTab("RULES")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${
+              activeTab === "RULES" ? "bg-emerald-600 text-white shadow" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <DollarSign className="w-3.5 h-3.5" /> Trip Rules
+          </button>
+          <button
             onClick={() => setActiveTab("BACKUP")}
             className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 ${
               activeTab === "BACKUP" ? "bg-emerald-600 text-white shadow" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -87,6 +96,10 @@ export default function SettingsPage() {
             onSave={saveLocation}
             onDelete={(id) => deleteLocation(id)}
           />
+        </div>
+      ) : activeTab === "RULES" ? (
+        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg">
+          <TripRulesManager />
         </div>
       ) : (
         <BackupRestoreCard

@@ -16,7 +16,8 @@ interface StartTripModalProps {
     destinationLabel: string,
     originLocationId?: string | null,
     destinationLocationId?: string | null,
-    notes?: string | null
+    notes?: string | null,
+    isReimbursableOverride?: boolean
   ) => void;
   onAddLocation?: (name: string, type: "HOME" | "OFFICE" | "SITE", address?: string) => void;
 }
@@ -29,6 +30,7 @@ export function StartTripModal({
   onAddLocation,
 }: StartTripModalProps) {
   const [tripType, setTripType] = useState<TripType>("OFFICE_TO_SITE");
+  const [isReimbursable, setIsReimbursable] = useState<boolean>(() => computeReimbursability("OFFICE_TO_SITE"));
   const [originId, setOriginId] = useState<string>("");
   const [destinationId, setDestinationId] = useState<string>("");
   const [customOrigin, setCustomOrigin] = useState("");
@@ -41,8 +43,6 @@ export function StartTripModal({
   const [newLocType, setNewLocType] = useState<"HOME" | "OFFICE" | "SITE">("SITE");
 
   if (!isOpen) return null;
-
-  const isReimbursable = computeReimbursability(tripType);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +58,8 @@ export function StartTripModal({
       destLabel,
       originLoc ? originLoc.id : null,
       destLoc ? destLoc.id : null,
-      notes.trim() || null
+      notes.trim() || null,
+      isReimbursable
     );
     onClose();
   };
@@ -97,7 +98,11 @@ export function StartTripModal({
             </label>
             <select
               value={tripType}
-              onChange={(e) => setTripType(e.target.value as TripType)}
+              onChange={(e) => {
+                const next = e.target.value as TripType;
+                setTripType(next);
+                setIsReimbursable(computeReimbursability(next));
+              }}
               className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-indigo-500 transition-colors"
             >
               {TRIP_TYPE_OPTIONS.map((opt) => (
@@ -108,21 +113,34 @@ export function StartTripModal({
             </select>
           </div>
 
-          {/* Reimbursable Status Indicator Card */}
-          <div className={`p-3.5 rounded-xl border flex items-center gap-3 ${
+          {/* Reimbursable Status Indicator Card with Interactive Toggle */}
+          <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
             isReimbursable
               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
               : "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
           }`}>
-            {isReimbursable ? <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" /> : <XCircle className="w-5 h-5 shrink-0 text-slate-500" />}
-            <div className="text-xs">
-              <span className="font-bold block text-sm">
-                {isReimbursable ? "Eligible for Expense Reimbursement" : "Personal Commute / Non-Reimbursable"}
-              </span>
-              <span>
-                Computed automatically from rule: <span className="font-mono font-bold">{tripType}</span>
-              </span>
+            <div className="flex items-center gap-3">
+              {isReimbursable ? <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" /> : <XCircle className="w-5 h-5 shrink-0 text-slate-500" />}
+              <div className="text-xs">
+                <span className="font-bold block text-sm">
+                  {isReimbursable ? "Eligible for Expense Reimbursement" : "Personal Commute / Non-Reimbursable"}
+                </span>
+                <span>
+                  Configured Rule for <span className="font-mono font-bold">{tripType}</span>: {computeReimbursability(tripType) ? "Reimbursable" : "Non-Reimbursable"}
+                </span>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsReimbursable(!isReimbursable)}
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-extrabold tracking-wide uppercase transition-all shadow-sm shrink-0 ${
+                isReimbursable
+                  ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                  : "bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600"
+              }`}
+            >
+              {isReimbursable ? "Override: YES" : "Override: NO"}
+            </button>
           </div>
 
           {/* Origin Location Selector */}

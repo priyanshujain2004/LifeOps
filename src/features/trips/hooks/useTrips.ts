@@ -70,10 +70,11 @@ export function useTrips() {
     destinationLabel: string,
     originLocationId?: string | null,
     destinationLocationId?: string | null,
-    notes?: string | null
+    notes?: string | null,
+    isReimbursableOverride?: boolean
   ) => {
     if (!user?.id) return;
-    const isReimbursable = computeReimbursability(tripType);
+    const isReimbursable = typeof isReimbursableOverride === "boolean" ? isReimbursableOverride : computeReimbursability(tripType);
     const nowIso = new Date().toISOString();
     const tempId = `trip-${Date.now()}`;
 
