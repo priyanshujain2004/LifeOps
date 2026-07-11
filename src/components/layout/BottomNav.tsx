@@ -20,7 +20,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800 bg-slate-900/95 backdrop-blur-lg dark:bg-slate-950/95 transition-all">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-lg dark:bg-slate-950/95 dark:border-slate-800 transition-all shadow-lg">
       <div className="max-w-4xl mx-auto px-2 flex items-center justify-around h-16">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -31,8 +31,8 @@ export function BottomNav() {
               href={item.href}
               className={`relative flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all ${
                 isActive
-                  ? "text-indigo-400 font-semibold"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "text-indigo-600 dark:text-indigo-400 font-semibold"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
               <div className="relative">

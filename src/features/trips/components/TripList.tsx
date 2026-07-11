@@ -14,9 +14,9 @@ interface TripListProps {
 export function TripList({ trips, onEndTrip }: TripListProps) {
   if (trips.length === 0) {
     return (
-      <div className="p-12 rounded-2xl bg-slate-900/40 border border-dashed border-slate-800 text-center space-y-3">
-        <Navigation className="w-10 h-10 text-slate-600 mx-auto animate-bounce" />
-        <h3 className="text-base font-semibold text-slate-300">No Mobility Trips Recorded</h3>
+      <div className="p-12 rounded-2xl bg-white dark:bg-slate-900/40 border border-dashed border-slate-300 dark:border-slate-800 text-center space-y-3 shadow-sm">
+        <Navigation className="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto animate-bounce" />
+        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-300">No Mobility Trips Recorded</h3>
         <p className="text-xs text-slate-500 max-w-sm mx-auto">
           Start your first trip session to track exact commute durations, client site visits, and automatic reimbursable travel allowances.
         </p>
@@ -35,25 +35,25 @@ export function TripList({ trips, onEndTrip }: TripListProps) {
         return (
           <div
             key={trip.id}
-            className={`p-4 rounded-2xl border transition-all ${
+            className={`p-4 rounded-2xl border transition-all shadow-sm ${
               isInProgress
-                ? "bg-gradient-to-r from-indigo-950/60 via-slate-900 to-indigo-950/40 border-indigo-500/80 shadow-lg shadow-indigo-500/10"
-                : "bg-slate-900/80 border-slate-800/80 hover:border-slate-700"
+                ? "bg-white dark:bg-gradient-to-r dark:from-indigo-950/60 dark:via-slate-900 dark:to-indigo-950/40 border-indigo-500/80 shadow-indigo-500/10"
+                : "bg-white dark:bg-slate-900/80 border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700"
             }`}
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-indigo-400 font-bold px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-bold px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
                     {trip.trip_type.replace(/_/g, " ")}
                   </span>
 
                   {trip.reimbursable ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[11px] font-medium">
                       <CheckCircle2 className="w-3 h-3" /> Reimbursable Travel
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[11px]">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px]">
                       Personal Commute
                     </span>
                   )}
@@ -65,13 +65,13 @@ export function TripList({ trips, onEndTrip }: TripListProps) {
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 text-base font-bold text-slate-100">
+                <div className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-slate-100">
                   <span>{trip.origin_label}</span>
-                  <ArrowRight className="w-4 h-4 text-indigo-400" />
+                  <ArrowRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                   <span>{trip.destination_label}</span>
                 </div>
 
-                <div className="flex items-center gap-4 text-xs font-mono text-slate-400 pt-0.5">
+                <div className="flex items-center gap-4 text-xs font-mono text-slate-500 dark:text-slate-400 pt-0.5">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-slate-500" />
                     Departed: {formatIST(trip.departed_at, "hh:mm a")}

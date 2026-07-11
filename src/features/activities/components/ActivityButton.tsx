@@ -43,7 +43,7 @@ export function ActivityButton({
   if (activePairSession && activity.pair_label) {
     return (
       <div
-        className="group relative flex flex-col justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer shadow-lg overflow-hidden animate-fade-in bg-slate-900/95 dark:bg-slate-900 border-indigo-500/80 shadow-indigo-500/20"
+        className="group relative flex flex-col justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer shadow-lg overflow-hidden animate-fade-in bg-white dark:bg-slate-900 border-indigo-500/80 shadow-indigo-500/20"
         onClick={() => onLogPairEnd(activity.id, activity.pair_label!)}
       >
         {/* Active pulsing accent line */}
@@ -51,17 +51,17 @@ export function ActivityButton({
 
         <div className="flex items-start justify-between gap-2">
           <span className="text-2xl drop-shadow-sm">{activity.icon || "⚡"}</span>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold tracking-wide uppercase border border-indigo-500/30">
-            <StopCircle className="w-3 h-3 text-indigo-400 animate-spin" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold tracking-wide uppercase border border-indigo-500/30">
+            <StopCircle className="w-3 h-3 text-indigo-600 dark:text-indigo-400 animate-spin" />
             <span>Active • {elapsed}</span>
           </span>
         </div>
 
         <div className="mt-3">
-          <h4 className="font-bold text-sm text-slate-100 group-hover:text-indigo-300 transition-colors">
+          <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
             End {activity.pair_label}
           </h4>
-          <p className="text-[11px] font-mono text-indigo-400 mt-0.5">
+          <p className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">
             Tap to stop clock & record duration
           </p>
         </div>

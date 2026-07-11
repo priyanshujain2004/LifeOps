@@ -46,13 +46,13 @@ export function LocationManager({ locations, onSave, onDelete }: LocationManager
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
         <div>
-          <h3 className="font-bold text-base text-white flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-rose-400" />
-            <span>Saved Locations Directory ({locations.length} Total)</span>
+          <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-rose-500 dark:text-rose-400" />
+            <span>Saved Mobility Locations ({locations.length} Total)</span>
           </h3>
-          <p className="text-xs text-slate-400">Used for mobility trip origin and destination autocomplete</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Manage origin/destination autocomplete options for fast trip logging</p>
         </div>
         {editingId !== "NEW" && (
           <button
@@ -66,9 +66,9 @@ export function LocationManager({ locations, onSave, onDelete }: LocationManager
       </div>
 
       {editingId && (
-        <form onSubmit={handleSubmit} className="p-4 rounded-2xl bg-slate-900 border border-rose-500/60 space-y-3 animate-fade-in shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <h4 className="font-bold text-sm text-rose-300">
+        <form onSubmit={handleSubmit} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-rose-500/60 space-y-3 animate-fade-in shadow-xl">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+            <h4 className="font-bold text-sm text-rose-600 dark:text-rose-300">
               {editingId === "NEW" ? "Add New Location" : `Edit Location: ${name}`}
             </h4>
             <button type="button" onClick={() => setEditingId(null)} className="p-1 text-slate-400 hover:text-white">
@@ -136,18 +136,18 @@ export function LocationManager({ locations, onSave, onDelete }: LocationManager
         {locations.map((loc) => (
           <div
             key={loc.id}
-            className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 flex items-center justify-between gap-3"
+            className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 flex items-center justify-between gap-3 shadow-sm"
           >
             <div className="space-y-1 overflow-hidden">
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-extrabold uppercase ${
-                  loc.type === "HOME" ? "bg-cyan-500/15 text-cyan-400" : loc.type === "OFFICE" ? "bg-indigo-500/15 text-indigo-400" : "bg-rose-500/15 text-rose-400"
+                  loc.type === "HOME" ? "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400" : loc.type === "OFFICE" ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" : "bg-rose-500/15 text-rose-600 dark:text-rose-400"
                 }`}>
                   {loc.type}
                 </span>
-                <h4 className="font-bold text-sm text-slate-100 truncate">{loc.name}</h4>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{loc.name}</h4>
               </div>
-              {loc.address && <p className="text-xs text-slate-400 truncate">{loc.address}</p>}
+              {loc.address && <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{loc.address}</p>}
             </div>
 
             <div className="flex items-center gap-1 shrink-0">

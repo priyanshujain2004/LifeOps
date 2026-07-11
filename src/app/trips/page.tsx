@@ -46,19 +46,19 @@ export default function TripsPage() {
 
       {/* Saved Locations Accordion */}
       {showSavedLocations && (
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 animate-fade-in">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-indigo-400" /> Saved Locations Catalog (Autocomplete)
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-3 animate-fade-in shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+            <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Saved Locations Catalog (Autocomplete)
             </h3>
             <span className="text-xs font-mono text-slate-500">Manage in Settings for full CRUD</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             {locations.map((loc) => (
-              <div key={loc.id} className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between">
+              <div key={loc.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
                 <div>
-                  <h4 className="font-bold text-sm text-slate-200">{loc.name}</h4>
-                  <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 uppercase">
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-slate-200">{loc.name}</h4>
+                  <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 uppercase">
                     {loc.type}
                   </span>
                   {loc.address && <p className="text-xs text-slate-500 truncate mt-0.5">{loc.address}</p>}

@@ -20,14 +20,14 @@ interface TimeUtilizationChartProps {
 
 export function TimeUtilizationChart({ data }: TimeUtilizationChartProps) {
   return (
-    <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
+    <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-lg dark:shadow-xl space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-bold text-base text-white flex items-center gap-2">
-            <Clock className="w-4 h-4 text-indigo-400" />
+          <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+            <Clock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>Daily 24-Hour Time Allocation</span>
           </h3>
-          <p className="text-xs text-slate-400">Stacked hours across core categories & calculated free time gaps</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Stacked hours across core categories & calculated free time gaps</p>
         </div>
       </div>
 

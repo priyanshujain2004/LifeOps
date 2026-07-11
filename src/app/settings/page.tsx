@@ -72,7 +72,7 @@ export default function SettingsPage() {
           ))}
         </div>
       ) : activeTab === "ACTIVITIES" ? (
-        <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-lg">
+        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg">
           <ActivityTypeManager
             activityTypes={activityTypes}
             onSave={saveActivityType}
@@ -81,7 +81,7 @@ export default function SettingsPage() {
           />
         </div>
       ) : activeTab === "LOCATIONS" ? (
-        <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-lg">
+        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg">
           <LocationManager
             locations={locations}
             onSave={saveLocation}

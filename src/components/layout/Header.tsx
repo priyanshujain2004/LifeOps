@@ -40,7 +40,7 @@ export function Header() {
   }, [setIsOffline, triggerSync, updatePendingCount]);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md dark:bg-slate-950/80 dark:border-slate-800 transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md dark:bg-slate-950/80 dark:border-slate-800 transition-colors">
       <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand & IST Live Clock */}
         <div className="flex items-center gap-3">
@@ -48,10 +48,10 @@ export function Header() {
             ⚡
           </div>
           <div>
-            <h1 className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-1.5">
+            <h1 className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent flex items-center gap-1.5">
               LifeLog
             </h1>
-            <p className="text-xs font-mono text-slate-400 dark:text-slate-500 font-medium tracking-wide">
+            <p className="text-xs font-mono text-slate-500 dark:text-slate-400 font-medium tracking-wide">
               {currentIST || "Syncing IST Clock..."}
             </p>
           </div>
@@ -61,7 +61,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           {/* Offline/Online status & queue counter */}
           {isOffline ? (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-semibold animate-pulse">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-semibold animate-pulse">
               <WifiOff className="w-3.5 h-3.5" />
               <span>Offline</span>
               {pendingQueueCount > 0 && (
@@ -74,13 +74,13 @@ export function Header() {
             <button
               onClick={() => triggerSync()}
               disabled={isSyncing}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 text-xs font-semibold hover:bg-indigo-500/25 transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-500/25 transition-all"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
               <span>{isSyncing ? "Syncing..." : `${pendingQueueCount} Queued`}</span>
             </button>
           ) : (
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium" title="Online & Synced to Supabase">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium" title="Online & Synced to Supabase">
               <Wifi className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Online</span>
             </div>
@@ -89,10 +89,10 @@ export function Header() {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-xl bg-slate-800/60 dark:bg-slate-900 border border-slate-700/50 hover:border-indigo-500/50 text-slate-300 hover:text-white transition-all shadow-sm"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500/50 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white transition-all shadow-sm"
             aria-label="Toggle theme"
           >
-            {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-400" />}
+            {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
           </button>
         </div>
       </div>

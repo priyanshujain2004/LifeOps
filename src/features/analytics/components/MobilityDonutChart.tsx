@@ -11,13 +11,13 @@ interface MobilityDonutChartProps {
 
 export function MobilityDonutChart({ data }: MobilityDonutChartProps) {
   return (
-    <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl flex flex-col justify-between h-full">
+    <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-lg dark:shadow-xl flex flex-col justify-between h-full">
       <div>
-        <h3 className="font-bold text-base text-white flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-rose-400" />
+        <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-rose-500 dark:text-rose-400" />
           <span>Mobility & Location Breakdown</span>
         </h3>
-        <p className="text-xs text-slate-400">Time distribution across Home, Office, and Client Site</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Time distribution across Home, Office, and Client Site</p>
       </div>
 
       <div className="w-full h-64 my-4">

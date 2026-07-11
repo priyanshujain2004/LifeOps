@@ -40,7 +40,7 @@ function ExpensesContent() {
 
         {/* Reimbursable vs Personal Split */}
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full md:w-auto">
-          <div className="flex-1 p-3.5 rounded-2xl bg-slate-900/80 border border-emerald-500/30 min-w-[150px]">
+          <div className="flex-1 p-3.5 rounded-2xl bg-white/10 dark:bg-slate-900/80 border border-emerald-500/30 min-w-[150px]">
             <span className="text-[10px] uppercase font-bold text-emerald-400 flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" /> Reimbursable
             </span>
@@ -53,13 +53,13 @@ function ExpensesContent() {
                 style={{ width: `${monthlySummary.reimbursablePct}%` }}
               />
             </div>
-            <span className="text-[10px] font-mono text-slate-400 block text-right mt-1 font-bold">
+            <span className="text-[10px] font-mono text-slate-300 dark:text-slate-400 block text-right mt-1 font-bold">
               {monthlySummary.reimbursablePct}% of total
             </span>
           </div>
 
-          <div className="flex-1 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-700 min-w-[150px]">
-            <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
+          <div className="flex-1 p-3.5 rounded-2xl bg-white/10 dark:bg-slate-900/80 border border-slate-700 min-w-[150px]">
+            <span className="text-[10px] uppercase font-bold text-slate-300 dark:text-slate-400 flex items-center gap-1">
               <AlertCircle className="w-3 h-3" /> Personal / Non-Reimb
             </span>
             <div className="text-lg font-mono font-bold text-white mt-1">
@@ -67,11 +67,11 @@ function ExpensesContent() {
             </div>
             <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
               <div
-                className="bg-slate-500 h-full rounded-full transition-all duration-500"
+                className="bg-slate-400 dark:bg-slate-500 h-full rounded-full transition-all duration-500"
                 style={{ width: `${100 - monthlySummary.reimbursablePct}%` }}
               />
             </div>
-            <span className="text-[10px] font-mono text-slate-400 block text-right mt-1 font-bold">
+            <span className="text-[10px] font-mono text-slate-300 dark:text-slate-400 block text-right mt-1 font-bold">
               {100 - monthlySummary.reimbursablePct}% of total
             </span>
           </div>

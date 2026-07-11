@@ -19,24 +19,24 @@ export function BackupRestoreCard({ onExport, onImport }: BackupRestoreCardProps
   };
 
   return (
-    <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-      <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
-        <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+    <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg dark:shadow-xl space-y-4">
+      <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
           <Database className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="font-bold text-base text-white">Configuration Backup & Restore</h3>
-          <p className="text-xs text-slate-400">Export your custom activity buttons, categories, rules, and locations to JSON</p>
+          <h3 className="font-bold text-base text-slate-900 dark:text-white">Configuration Backup & Restore</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Export your custom activity buttons, categories, rules, and locations to JSON</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col justify-between gap-3">
+        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex flex-col justify-between gap-3">
           <div>
-            <h4 className="font-bold text-sm text-indigo-300 flex items-center gap-1.5">
+            <h4 className="font-bold text-sm text-indigo-600 dark:text-indigo-300 flex items-center gap-1.5">
               <Download className="w-4 h-4" /> Export Configuration JSON
             </h4>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Save a local JSON backup file containing all your activity buttons, custom categories, expense rules, and saved locations.
             </p>
           </div>
@@ -49,12 +49,12 @@ export function BackupRestoreCard({ onExport, onImport }: BackupRestoreCardProps
           </button>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col justify-between gap-3">
+        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex flex-col justify-between gap-3">
           <div>
-            <h4 className="font-bold text-sm text-emerald-300 flex items-center gap-1.5">
+            <h4 className="font-bold text-sm text-emerald-600 dark:text-emerald-300 flex items-center gap-1.5">
               <Upload className="w-4 h-4" /> Restore from JSON Backup
             </h4>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Select a previously exported `.json` file from your device to instantly overwrite/restore your configuration.
             </p>
           </div>

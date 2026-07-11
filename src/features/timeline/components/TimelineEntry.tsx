@@ -42,28 +42,28 @@ export function TimelineEntry({
     <div className="relative pl-6 py-2 group">
       {/* Timeline spine bullet */}
       <div
-        className="absolute left-[13px] top-[18px] w-3.5 h-3.5 rounded-full border-2 border-slate-900 shadow-md z-10 transition-transform group-hover:scale-125"
+        className="absolute left-[13px] top-[18px] w-3.5 h-3.5 rounded-full border-2 border-white dark:border-slate-900 shadow-md z-10 transition-transform group-hover:scale-125"
         style={{ backgroundColor: hex }}
       />
-      <div className="absolute left-[19px] top-[30px] bottom-0 w-0.5 bg-slate-800" />
+      <div className="absolute left-[19px] top-[30px] bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800" />
 
       {/* Duration from previous pill */}
       {durationFromPrevious && (
         <div className="mb-1.5 ml-1">
-          <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-900/80 px-2 py-0.5 rounded-full border border-slate-800">
+          <span className="text-[10px] font-mono font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-800">
             +{durationFromPrevious} since previous event
           </span>
         </div>
       )}
 
       {/* Main Log Card */}
-      <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all shadow-sm">
+      <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-start gap-3">
             <span className="text-2xl mt-0.5 drop-shadow-sm">{icon}</span>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="font-bold text-sm text-slate-100">{name}</h4>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">{name}</h4>
                 <span
                   className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded font-mono"
                   style={{
@@ -94,7 +94,7 @@ export function TimelineEntry({
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
                     placeholder="Enter note details..."
-                    className="flex-1 rounded-lg bg-slate-950 border border-slate-700 px-2.5 py-1 text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
+                    className="flex-1 rounded-lg bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 px-2.5 py-1 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
                     autoFocus
                   />
                   <button type="submit" className="p-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white">
@@ -103,13 +103,13 @@ export function TimelineEntry({
                   <button
                     type="button"
                     onClick={() => setIsEditingNote(false)}
-                    className="p-1 rounded bg-slate-800 text-slate-400 hover:text-white"
+                    className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </form>
               ) : log.notes ? (
-                <p className="text-xs text-slate-300 italic mt-1 bg-slate-950/40 px-2 py-1 rounded border border-slate-800/80">
+                <p className="text-xs text-slate-700 dark:text-slate-300 italic mt-1 bg-slate-100 dark:bg-slate-950/40 px-2 py-1 rounded border border-slate-200 dark:border-slate-800/80">
                   &quot;{log.notes}&quot;
                 </p>
               ) : null}
@@ -117,9 +117,9 @@ export function TimelineEntry({
           </div>
 
           {/* Timestamp & Actions */}
-          <div className="flex items-center justify-between sm:justify-end gap-3 self-stretch sm:self-center pt-2 sm:pt-0 border-t sm:border-0 border-slate-800">
+          <div className="flex items-center justify-between sm:justify-end gap-3 self-stretch sm:self-center pt-2 sm:pt-0 border-t sm:border-0 border-slate-200 dark:border-slate-800">
             <div className="text-left sm:text-right">
-              <span className="text-xs font-mono font-extrabold text-slate-200 block">
+              <span className="text-xs font-mono font-extrabold text-slate-800 dark:text-slate-200 block">
                 {formatIST(log.logged_at, "hh:mm:ss a")}
               </span>
               <span className="text-[9px] font-mono text-slate-500 flex items-center justify-start sm:justify-end gap-0.5">
@@ -130,15 +130,15 @@ export function TimelineEntry({
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsEditingNote(!isEditingNote)}
-                className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-indigo-300 transition-colors"
+                className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors"
                 title="Edit Note"
               >
                 <Edit3 className="w-3.5 h-3.5" />
               </button>
 
               {showConfirmDelete ? (
-                <div className="flex items-center gap-1 bg-red-950/80 p-1 rounded-lg border border-red-500/40">
-                  <span className="text-[10px] text-red-300 font-bold px-1">Delete?</span>
+                <div className="flex items-center gap-1 bg-red-100 dark:bg-red-950/80 p-1 rounded-lg border border-red-500/40">
+                  <span className="text-[10px] text-red-600 dark:text-red-300 font-bold px-1">Delete?</span>
                   <button
                     onClick={() => onDeleteLog(log.id)}
                     className="p-1 rounded bg-red-600 text-white hover:bg-red-500"
@@ -147,7 +147,7 @@ export function TimelineEntry({
                   </button>
                   <button
                     onClick={() => setShowConfirmDelete(false)}
-                    className="p-1 rounded bg-slate-800 text-slate-300"
+                    className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -155,7 +155,7 @@ export function TimelineEntry({
               ) : (
                 <button
                   onClick={() => setShowConfirmDelete(true)}
-                  className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/60 hover:bg-red-500/20 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                   title="Delete Log Entry"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

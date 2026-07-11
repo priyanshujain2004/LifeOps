@@ -71,11 +71,11 @@ export function ActivityTypeManager({ activityTypes, onSave, onDelete, onMoveSor
     <div className="space-y-4">
       <div className="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
-          <h3 className="font-bold text-base text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-400" />
+          <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>Activity Buttons Catalog ({activityTypes.length} Total)</span>
           </h3>
-          <p className="text-xs text-slate-400">Configure 1-tap logging buttons, category groupings, and start/end pairs</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Configure 1-tap logging buttons, category groupings, and start/end pairs</p>
         </div>
         {editingId !== "NEW" && (
           <button
@@ -90,9 +90,9 @@ export function ActivityTypeManager({ activityTypes, onSave, onDelete, onMoveSor
 
       {/* Editor Form */}
       {editingId && (
-        <form onSubmit={handleSubmit} className="p-4 rounded-2xl bg-slate-900 border border-indigo-500/60 space-y-4 animate-fade-in shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <h4 className="font-bold text-sm text-indigo-300">
+        <form onSubmit={handleSubmit} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-indigo-500/60 space-y-4 animate-fade-in shadow-xl">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+            <h4 className="font-bold text-sm text-indigo-600 dark:text-indigo-300">
               {editingId === "NEW" ? "Create New Activity Button" : `Edit Activity: ${name}`}
             </h4>
             <button type="button" onClick={() => setEditingId(null)} className="p-1 rounded text-slate-400 hover:text-white">
@@ -224,12 +224,12 @@ export function ActivityTypeManager({ activityTypes, onSave, onDelete, onMoveSor
         {activityTypes.map((act, idx) => (
           <div
             key={act.id}
-            className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 flex items-center justify-between gap-2"
+            className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 flex items-center justify-between gap-2 shadow-sm"
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
               <span className="text-xl shrink-0">{act.icon || "⚡"}</span>
               <div className="truncate">
-                <h4 className="font-bold text-xs text-slate-100 truncate">{act.name}</h4>
+                <h4 className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate">{act.name}</h4>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span
                     className="text-[9px] font-bold px-1.5 py-0.2 rounded font-mono uppercase"

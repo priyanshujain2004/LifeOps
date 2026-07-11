@@ -93,18 +93,18 @@ export function AddExpenseModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl text-slate-900 dark:text-slate-100 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
+            <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
               <DollarSign className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-lg leading-tight">Log Expense Entry</h3>
-              <p className="text-xs text-slate-400">Tie expense to trip session or standalone activity</p>
+              <h3 className="font-bold text-lg leading-tight text-slate-900 dark:text-white">Log Expense Entry</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Tie expense to trip session or standalone activity</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white">
+          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white">
             <X className="w-5 h-5" />
           </button>
         </div>

@@ -21,39 +21,39 @@ export default function HomePage() {
     <div className="space-y-6 pb-6 animate-fade-in">
       {/* Quick Status Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between shadow-sm">
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-400 font-medium">Today&apos;s Logs</span>
-            <div className="text-xl font-bold font-mono text-indigo-400 mt-0.5">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Today&apos;s Logs</span>
+            <div className="text-xl font-bold font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">
               {todayLogs.length}
             </div>
           </div>
-          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400">
+          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
             <Clock className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between shadow-sm">
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-400 font-medium">Active Pairs</span>
-            <div className="text-xl font-bold font-mono text-amber-400 mt-0.5">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Active Pairs</span>
+            <div className="text-xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-0.5">
               {activePairsList.length}
             </div>
           </div>
-          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
+          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
             <Zap className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="col-span-2 sm:col-span-1 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between shadow-sm">
+        <div className="col-span-2 sm:col-span-1 p-3.5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
           <div>
-            <span className="text-xs text-slate-400 font-medium">Mobility Trip</span>
-            <div className="text-sm font-bold text-emerald-400 mt-0.5 truncate max-w-[140px]">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Mobility Trip</span>
+            <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 truncate max-w-[140px]">
               {activeTrip ? activeTrip.origin_label : "No Active Trip"}
             </div>
           </div>
           {activeTrip ? (
-            <Link href="/trips" className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors">
+            <Link href="/trips" className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors">
               <Navigation className="w-5 h-5 animate-pulse" />
             </Link>
           ) : (
@@ -135,12 +135,12 @@ export default function HomePage() {
 
       {/* Recent Feed Preview */}
       {todayLogs.length > 0 && (
-        <div className="pt-4 border-t border-slate-800">
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-indigo-400" /> Recent Today
+            <h3 className="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> Recent Today
             </h3>
-            <Link href="/timeline" className="text-xs text-indigo-400 hover:underline font-medium">
+            <Link href="/timeline" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
               View Full Timeline ➔
             </Link>
           </div>
@@ -148,20 +148,20 @@ export default function HomePage() {
             {todayLogs.slice(0, 3).map((log) => {
               const typeInfo = activityTypes.find((t) => t.id === log.activity_type_id);
               return (
-                <div key={log.id} className="p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between">
+                <div key={log.id} className="p-3 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{typeInfo?.icon || "⚡"}</span>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-200">{typeInfo?.name || "Activity Log"}</h4>
-                      {log.notes && <p className="text-xs text-slate-400 italic mt-0.5">&quot;{log.notes}&quot;</p>}
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200">{typeInfo?.name || "Activity Log"}</h4>
+                      {log.notes && <p className="text-xs text-slate-500 dark:text-slate-400 italic mt-0.5">&quot;{log.notes}&quot;</p>}
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-mono font-bold text-indigo-300">
+                    <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-300">
                       {formatIST(log.logged_at, "hh:mm a")}
                     </span>
                     {log.trip_id && (
-                      <span className="block text-[10px] text-emerald-400 font-medium flex items-center justify-end gap-0.5 mt-0.5">
+                      <span className="block text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center justify-end gap-0.5 mt-0.5">
                         <CheckCircle className="w-2.5 h-2.5" /> Trip Link
                       </span>
                     )}
