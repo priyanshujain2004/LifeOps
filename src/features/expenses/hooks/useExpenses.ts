@@ -7,14 +7,18 @@ import type { ExpenseRow, ExpenseCategory } from "../types";
 import type { TripRow } from "@/features/trips/types";
 import { queueExpense } from "@/lib/offline/idb";
 import { toast } from "sonner";
+import { appMemoryCache } from "@/lib/cache";
 
 export function useExpenses() {
-  const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
-  const [trips, setTrips] = useState<TripRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [expenses, setExpenses] = useState<ExpenseRow[]>(appMemoryCache.expenses || []);
+  const [trips, setTrips] = useState<TripRow[]>(appMemoryCache.trips || []);
+  const [loading, setLoading] = useState(!appMemoryCache.hasLoadedExpenses);
   const { isOffline, activeTrip, updatePendingCount } = useAppStore();
 
   const fetchExpensesAndTrips = useCallback(async () => {
+    if (!appMemoryCache.hasLoadedExpenses) {
+      setLoading(true);
+    }
     try {
       const supabase = getSupabaseBrowserClient();
 
@@ -24,21 +28,25 @@ export function useExpenses() {
         .select("*")
         .order("logged_at", { ascending: false });
 
-      if (expData && expData.length > 0) {
-        setExpenses(expData);
+      const resolvedExp = expData || (appMemoryCache.expenses || []);
+      setExpenses(resolvedExp);
+      appMemoryCache.expenses = resolvedExp;
+      appMemoryCache.hasLoadedExpenses = true;
+
+      // Fetch trips for linking dropdown if not already cached
+      if (!appMemoryCache.trips) {
+        const { data: tripsData } = await supabase
+          .from("trips")
+          .select("*")
+          .order("departed_at", { ascending: false })
+          .limit(20);
+
+        if (tripsData) {
+          setTrips(tripsData);
+          appMemoryCache.trips = tripsData;
+        }
       } else {
-        setExpenses([]);
-      }
-
-      // Fetch trips for linking dropdown
-      const { data: tripsData } = await supabase
-        .from("trips")
-        .select("*")
-        .order("departed_at", { ascending: false })
-        .limit(20);
-
-      if (tripsData) {
-        setTrips(tripsData);
+        setTrips(appMemoryCache.trips);
       }
     } catch (err) {
       console.error("Error loading expenses:", err);
@@ -137,7 +145,11 @@ export function useExpenses() {
       created_at: nowIso,
     };
 
-    setExpenses((prev) => [newExpense, ...prev]);
+    setExpenses((prev) => {
+      const next = [newExpense, ...prev];
+      appMemoryCache.expenses = next;
+      return next;
+    });
     toast.success(`Logged Expense: ₹${amount.toFixed(2)} (${category})`);
 
     if (isOffline) {

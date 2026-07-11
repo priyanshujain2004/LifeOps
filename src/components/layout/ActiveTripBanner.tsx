@@ -33,7 +33,7 @@ export function ActiveTripBanner() {
       const { error } = await supabase
         .from("trips")
         .update({
-          status: "COMPLETED",
+          status: "COMPLETED" as const,
           arrived_at: arrivedAt,
         })
         .eq("id", activeTrip.id);

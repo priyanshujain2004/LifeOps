@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import type { LocationRow } from "@/features/trips/types";
-import { Plus, Edit3, Trash2, MapPin, Check, X } from "lucide-react";
+import { Plus, Edit3, Trash2, MapPin, Check, X, Save } from "lucide-react";
 
 interface LocationManagerProps {
   locations: LocationRow[];
@@ -66,35 +66,35 @@ export function LocationManager({ locations, onSave, onDelete }: LocationManager
       </div>
 
       {editingId && (
-        <form onSubmit={handleSubmit} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-rose-500/60 space-y-3 animate-fade-in shadow-xl">
+        <form onSubmit={handleSubmit} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-rose-500/60 space-y-3 animate-fade-in shadow-xl">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
             <h4 className="font-bold text-sm text-rose-600 dark:text-rose-300">
               {editingId === "NEW" ? "Add New Location" : `Edit Location: ${name}`}
             </h4>
-            <button type="button" onClick={() => setEditingId(null)} className="p-1 text-slate-400 hover:text-white">
+            <button type="button" onClick={() => setEditingId(null)} className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white">
               <X className="w-4 h-4" />
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Location Name</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Location Name</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Project Site Beta"
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100"
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Location Category</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Location Category</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-semibold"
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-semibold"
               >
                 <option value="SITE">SITE (Project/Client)</option>
                 <option value="OFFICE">OFFICE (Corporate/HQ)</option>
@@ -103,13 +103,13 @@ export function LocationManager({ locations, onSave, onDelete }: LocationManager
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Full Address (Optional)</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Address (Optional)</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="e.g. Sector 42, Tech Park..."
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100"
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
               />
             </div>
           </div>
@@ -118,15 +118,16 @@ export function LocationManager({ locations, onSave, onDelete }: LocationManager
             <button
               type="button"
               onClick={() => setEditingId(null)}
-              className="px-3 py-1.5 rounded-xl border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-medium"
+              className="px-4 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1 shadow"
+              className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow flex items-center gap-1.5"
             >
-              <Check className="w-3.5 h-3.5" /> Save Location
+              <Save className="w-3.5 h-3.5" />
+              <span>{editingId === "NEW" ? "Save Location" : "Update Location"}</span>
             </button>
           </div>
         </form>

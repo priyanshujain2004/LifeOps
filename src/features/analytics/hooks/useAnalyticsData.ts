@@ -7,6 +7,7 @@ import { DEFAULT_ACTIVITY_TYPES } from "@/features/activities/types/seedDefaults
 import type { TripRow } from "@/features/trips/types";
 import type { ExpenseRow } from "@/features/expenses/types";
 import { formatIST } from "@/lib/utils";
+import { appMemoryCache } from "@/lib/cache";
 
 export interface DayUtilizationData {
   dateLabel: string; // e.g., "Mon 11 Jul"
@@ -33,24 +34,28 @@ export interface ExpenseDayTrend {
 }
 
 export function useAnalyticsData(days: number = 7) {
-  const [logs, setLogs] = useState<ActivityLog[]>([]);
-  const [activityTypes, setActivityTypes] = useState<ActivityType[]>(DEFAULT_ACTIVITY_TYPES);
-  const [trips, setTrips] = useState<TripRow[]>([]);
-  const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState<ActivityLog[]>(appMemoryCache.todayLogs || []);
+  const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
+    appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
+  );
+  const [trips, setTrips] = useState<TripRow[]>(appMemoryCache.trips || []);
+  const [expenses, setExpenses] = useState<ExpenseRow[]>(appMemoryCache.expenses || []);
+  const [loading, setLoading] = useState(
+    !appMemoryCache.hasLoadedActivities || !appMemoryCache.hasLoadedTrips || !appMemoryCache.hasLoadedExpenses
+  );
 
   const fetchAllData = useCallback(async () => {
-    setLoading(true);
+    if (!appMemoryCache.hasLoadedActivities || !appMemoryCache.hasLoadedTrips || !appMemoryCache.hasLoadedExpenses) {
+      setLoading(true);
+    }
     try {
       const supabase = getSupabaseBrowserClient();
 
       // 1. Activity types
       const { data: typesData } = await supabase.from("activity_types").select("*");
-      if (typesData && typesData.length > 0) {
-        setActivityTypes(typesData);
-      } else {
-        setActivityTypes(DEFAULT_ACTIVITY_TYPES);
-      }
+      const resolvedTypes = (typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
+      setActivityTypes(resolvedTypes);
+      if (typesData && typesData.length > 0) appMemoryCache.activityTypes = typesData;
 
       // Time window cutoff
       const cutoff = new Date();
@@ -67,7 +72,7 @@ export function useAnalyticsData(days: number = 7) {
       if (logsData) {
         setLogs(logsData);
       } else {
-        setLogs([]);
+        setLogs(appMemoryCache.todayLogs || []);
       }
 
       // 3. Trips
@@ -79,6 +84,10 @@ export function useAnalyticsData(days: number = 7) {
 
       if (tripsData) {
         setTrips(tripsData);
+        appMemoryCache.trips = tripsData;
+        appMemoryCache.hasLoadedTrips = true;
+      } else {
+        setTrips(appMemoryCache.trips || []);
       }
 
       // 4. Expenses
@@ -90,8 +99,10 @@ export function useAnalyticsData(days: number = 7) {
 
       if (expData && expData.length > 0) {
         setExpenses(expData);
+        appMemoryCache.expenses = expData;
+        appMemoryCache.hasLoadedExpenses = true;
       } else {
-        setExpenses([]);
+        setExpenses(appMemoryCache.expenses || []);
       }
     } catch (err) {
       console.error("Error loading analytics data:", err);

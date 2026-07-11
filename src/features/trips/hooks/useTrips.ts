@@ -7,14 +7,18 @@ import type { TripRow, LocationRow, TripType } from "../types";
 import { DEFAULT_LOCATIONS } from "../types/seedLocations";
 import { computeReimbursability } from "../utils/reimbursability";
 import { toast } from "sonner";
+import { appMemoryCache } from "@/lib/cache";
 
 export function useTrips() {
-  const [trips, setTrips] = useState<TripRow[]>([]);
-  const [locations, setLocations] = useState<LocationRow[]>(DEFAULT_LOCATIONS);
-  const [loading, setLoading] = useState(true);
+  const [trips, setTrips] = useState<TripRow[]>(appMemoryCache.trips || []);
+  const [locations, setLocations] = useState<LocationRow[]>(appMemoryCache.locations || DEFAULT_LOCATIONS);
+  const [loading, setLoading] = useState(!appMemoryCache.hasLoadedTrips);
   const { activeTrip, setActiveTrip } = useAppStore();
 
   const fetchTripsAndLocations = useCallback(async () => {
+    if (!appMemoryCache.hasLoadedTrips) {
+      setLoading(true);
+    }
     try {
       const supabase = getSupabaseBrowserClient();
 
@@ -25,11 +29,9 @@ export function useTrips() {
         .eq("active", true)
         .order("name", { ascending: true });
 
-      if (locsData && locsData.length > 0) {
-        setLocations(locsData);
-      } else {
-        setLocations(DEFAULT_LOCATIONS);
-      }
+      const resolvedLocs = (locsData && locsData.length > 0) ? locsData : (appMemoryCache.locations || DEFAULT_LOCATIONS);
+      setLocations(resolvedLocs);
+      appMemoryCache.locations = resolvedLocs;
 
       // Fetch trips
       const { data: tripsData } = await supabase
@@ -37,11 +39,13 @@ export function useTrips() {
         .select("*")
         .order("departed_at", { ascending: false });
 
-      if (tripsData) {
-        setTrips(tripsData);
-        const inProg = tripsData.find((t) => t.status === "IN_PROGRESS");
-        setActiveTrip(inProg || null);
-      }
+      const resolvedTrips = tripsData || (appMemoryCache.trips || []);
+      setTrips(resolvedTrips);
+      appMemoryCache.trips = resolvedTrips;
+      appMemoryCache.hasLoadedTrips = true;
+
+      const inProg = resolvedTrips.find((t) => t.status === "IN_PROGRESS");
+      setActiveTrip(inProg || null);
     } catch (err) {
       console.error("Error loading trips and locations:", err);
     } finally {
@@ -75,14 +79,18 @@ export function useTrips() {
       destination_location_id: destinationLocationId || null,
       departed_at: nowIso,
       arrived_at: null,
-      status: "IN_PROGRESS",
+      status: "IN_PROGRESS" as const,
       reimbursable: isReimbursable,
       notes: notes || null,
       created_at: nowIso,
     };
 
     // Optimistic UI update
-    setTrips((prev) => [newTrip, ...prev]);
+    setTrips((prev) => {
+      const next = [newTrip, ...prev];
+      appMemoryCache.trips = next;
+      return next;
+    });
     setActiveTrip(newTrip);
     toast.success(`Trip Started: ${originLabel} ➔ ${destinationLabel} (${isReimbursable ? "Reimbursable" : "Personal"})`);
 
@@ -98,7 +106,7 @@ export function useTrips() {
           origin_location_id: originLocationId || null,
           destination_location_id: destinationLocationId || null,
           departed_at: nowIso,
-          status: "IN_PROGRESS",
+          status: "IN_PROGRESS" as const,
           reimbursable: isReimbursable,
           notes: notes || null,
         })
@@ -116,9 +124,11 @@ export function useTrips() {
 
   const endTrip = async (tripId: string) => {
     const arrivedAt = new Date().toISOString();
-    setTrips((prev) =>
-      prev.map((t) => (t.id === tripId ? { ...t, status: "COMPLETED", arrived_at: arrivedAt } : t))
-    );
+    setTrips((prev) => {
+      const next: TripRow[] = prev.map((t) => (t.id === tripId ? { ...t, status: "COMPLETED" as const, arrived_at: arrivedAt } : t));
+      appMemoryCache.trips = next;
+      return next;
+    });
     if (activeTrip?.id === tripId) {
       setActiveTrip(null);
     }
@@ -128,7 +138,7 @@ export function useTrips() {
       const supabase = getSupabaseBrowserClient();
       await supabase
         .from("trips")
-        .update({ status: "COMPLETED", arrived_at: arrivedAt })
+        .update({ status: "COMPLETED" as const, arrived_at: arrivedAt })
         .eq("id", tripId);
     } catch (err) {
       console.error("Failed to end trip on server:", err);

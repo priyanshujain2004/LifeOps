@@ -8,14 +8,22 @@ import { DEFAULT_ACTIVITY_TYPES } from "../types/seedDefaults";
 import { queueActivityLog } from "@/lib/offline/idb";
 import { toast } from "sonner";
 import { formatIST } from "@/lib/utils";
+import { appMemoryCache } from "@/lib/cache";
 
 export function useActivities() {
-  const [activityTypes, setActivityTypes] = useState<ActivityType[]>(DEFAULT_ACTIVITY_TYPES);
-  const [todayLogs, setTodayLogs] = useState<ActivityLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
+    appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
+  );
+  const [todayLogs, setTodayLogs] = useState<ActivityLog[]>(
+    appMemoryCache.todayLogs || []
+  );
+  const [loading, setLoading] = useState(!appMemoryCache.hasLoadedActivities);
   const { isOffline, activeTrip, startPairedActivity, endPairedActivity, updatePendingCount } = useAppStore();
 
   const fetchActivities = useCallback(async () => {
+    if (!appMemoryCache.hasLoadedActivities) {
+      setLoading(true);
+    }
     try {
       const supabase = getSupabaseBrowserClient();
       
@@ -26,12 +34,9 @@ export function useActivities() {
         .eq("active", true)
         .order("sort_order", { ascending: true });
 
-      if (!typesError && typesData && typesData.length > 0) {
-        setActivityTypes(typesData);
-      } else {
-        // Fallback to seed defaults during dev / offline
-        setActivityTypes(DEFAULT_ACTIVITY_TYPES);
-      }
+      const resolvedTypes = (!typesError && typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
+      setActivityTypes(resolvedTypes);
+      appMemoryCache.activityTypes = resolvedTypes;
 
       // Fetch today's logs
       const startOfDay = new Date();
@@ -43,9 +48,10 @@ export function useActivities() {
         .gte("logged_at", startOfDay.toISOString())
         .order("logged_at", { ascending: false });
 
-      if (!logsError && logsData) {
-        setTodayLogs(logsData);
-      }
+      const resolvedLogs = (!logsError && logsData) ? logsData : (appMemoryCache.todayLogs || []);
+      setTodayLogs(resolvedLogs);
+      appMemoryCache.todayLogs = resolvedLogs;
+      appMemoryCache.hasLoadedActivities = true;
     } catch (err) {
       console.error("Error fetching activities:", err);
     } finally {
@@ -83,7 +89,11 @@ export function useActivities() {
     };
 
     // Update optimistic UI right away
-    setTodayLogs((prev) => [newLog, ...prev]);
+    setTodayLogs((prev) => {
+      const next = [newLog, ...prev];
+      appMemoryCache.todayLogs = next;
+      return next;
+    });
 
     // Handle pairing logic
     if (activityType.is_paired && activityType.pair_label) {
@@ -171,7 +181,11 @@ export function useActivities() {
       created_at: nowIso,
     };
 
-    setTodayLogs((prev) => [newLog, ...prev]);
+    setTodayLogs((prev) => {
+      const next = [newLog, ...prev];
+      appMemoryCache.todayLogs = next;
+      return next;
+    });
     endPairedActivity(startActivityId);
     toast.success(`Completed: ${pairLabel} at ${formatIST(nowIso, "hh:mm a")}`);
 

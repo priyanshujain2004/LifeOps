@@ -7,33 +7,56 @@ import { DEFAULT_ACTIVITY_TYPES } from "@/features/activities/types/seedDefaults
 import type { TripRow } from "@/features/trips/types";
 import { getTodayIST } from "@/lib/utils";
 import { toast } from "sonner";
+import { appMemoryCache } from "@/lib/cache";
 
 export function useTimeline(initialDate?: string) {
   const [selectedDate, setSelectedDate] = useState<string>(initialDate || getTodayIST());
-  const [logs, setLogs] = useState<ActivityLog[]>([]);
-  const [activityTypes, setActivityTypes] = useState<ActivityType[]>(DEFAULT_ACTIVITY_TYPES);
-  const [trips, setTrips] = useState<TripRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState<ActivityLog[]>(() => {
+    const dateKey = initialDate || getTodayIST();
+    if (dateKey === getTodayIST() && appMemoryCache.todayLogs) {
+      return [...appMemoryCache.todayLogs].reverse();
+    }
+    return appMemoryCache.timelineLogsByDate[dateKey] || [];
+  });
+  const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
+    appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
+  );
+  const [trips, setTrips] = useState<TripRow[]>(appMemoryCache.trips || []);
+  const [loading, setLoading] = useState(() => {
+    const dateKey = initialDate || getTodayIST();
+    if (dateKey === getTodayIST() && appMemoryCache.todayLogs) return false;
+    return !appMemoryCache.timelineLogsByDate[dateKey];
+  });
 
   const fetchTimeline = useCallback(async () => {
-    setLoading(true);
+    if (!appMemoryCache.timelineLogsByDate[selectedDate] && !(selectedDate === getTodayIST() && appMemoryCache.todayLogs)) {
+      setLoading(true);
+    }
     try {
       const supabase = getSupabaseBrowserClient();
 
-      // 1. Fetch activity types
-      const { data: typesData } = await supabase
-        .from("activity_types")
-        .select("*");
-      if (typesData && typesData.length > 0) {
-        setActivityTypes(typesData);
+      // 1. Fetch activity types if not cached
+      if (!appMemoryCache.activityTypes) {
+        const { data: typesData } = await supabase.from("activity_types").select("*");
+        if (typesData && typesData.length > 0) {
+          setActivityTypes(typesData);
+          appMemoryCache.activityTypes = typesData;
+        } else {
+          setActivityTypes(DEFAULT_ACTIVITY_TYPES);
+        }
       } else {
-        setActivityTypes(DEFAULT_ACTIVITY_TYPES);
+        setActivityTypes(appMemoryCache.activityTypes);
       }
 
       // 2. Fetch trips for lookup
-      const { data: tripsData } = await supabase.from("trips").select("*");
-      if (tripsData) {
-        setTrips(tripsData);
+      if (!appMemoryCache.trips) {
+        const { data: tripsData } = await supabase.from("trips").select("*");
+        if (tripsData) {
+          setTrips(tripsData);
+          appMemoryCache.trips = tripsData;
+        }
+      } else {
+        setTrips(appMemoryCache.trips);
       }
 
       // 3. Fetch logs for selected date (IST window from 00:00:00 to 23:59:59)
@@ -49,8 +72,10 @@ export function useTimeline(initialDate?: string) {
 
       if (logsData) {
         setLogs(logsData);
+        appMemoryCache.timelineLogsByDate[selectedDate] = logsData;
       } else {
         setLogs([]);
+        appMemoryCache.timelineLogsByDate[selectedDate] = [];
       }
     } catch (err) {
       console.error("Error fetching timeline:", err);

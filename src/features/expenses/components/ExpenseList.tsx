@@ -115,16 +115,16 @@ export function ExpenseList({ expenses, onDeleteExpense }: ExpenseListProps) {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in"
           onClick={() => setSelectedReceipt(null)}
         >
-          <div className="relative max-w-2xl max-h-[85vh] rounded-2xl bg-slate-900 p-4 border border-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-              <h4 className="font-bold text-sm text-slate-200 flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-indigo-400" /> Receipt Photo Verification
+          <div className="relative max-w-2xl max-h-[85vh] rounded-2xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-3">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-slate-200 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Receipt Photo Verification
               </h4>
-              <button onClick={() => setSelectedReceipt(null)} className="p-1 rounded text-slate-400 hover:text-white">
+              <button onClick={() => setSelectedReceipt(null)} className="p-1 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="overflow-auto max-h-[70vh] flex items-center justify-center bg-slate-950 rounded-xl p-2 border border-slate-800">
+            <div className="overflow-auto max-h-[70vh] flex items-center justify-center bg-slate-50 dark:bg-slate-950 rounded-xl p-2 border border-slate-200 dark:border-slate-800">
               <img src={selectedReceipt} alt="Full Receipt" className="max-w-full max-h-full object-contain rounded-lg" />
             </div>
             <div className="mt-3 text-right">

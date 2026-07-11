@@ -7,14 +7,21 @@ import { DEFAULT_ACTIVITY_TYPES } from "@/features/activities/types/seedDefaults
 import type { LocationRow } from "@/features/trips/types";
 import { DEFAULT_LOCATIONS } from "@/features/trips/types/seedLocations";
 import { toast } from "sonner";
+import { appMemoryCache } from "@/lib/cache";
 
 export function useSettings() {
-  const [activityTypes, setActivityTypes] = useState<ActivityType[]>(DEFAULT_ACTIVITY_TYPES);
-  const [locations, setLocations] = useState<LocationRow[]>(DEFAULT_LOCATIONS);
-  const [loading, setLoading] = useState(true);
+  const [activityTypes, setActivityTypes] = useState<ActivityType[]>(
+    appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES
+  );
+  const [locations, setLocations] = useState<LocationRow[]>(
+    appMemoryCache.locations || DEFAULT_LOCATIONS
+  );
+  const [loading, setLoading] = useState(!appMemoryCache.hasLoadedSettings);
 
   const fetchConfig = useCallback(async () => {
-    setLoading(true);
+    if (!appMemoryCache.hasLoadedSettings) {
+      setLoading(true);
+    }
     try {
       const supabase = getSupabaseBrowserClient();
 
@@ -24,11 +31,9 @@ export function useSettings() {
         .select("*")
         .order("sort_order", { ascending: true });
 
-      if (typesData && typesData.length > 0) {
-        setActivityTypes(typesData);
-      } else {
-        setActivityTypes(DEFAULT_ACTIVITY_TYPES);
-      }
+      const resolvedTypes = (typesData && typesData.length > 0) ? typesData : (appMemoryCache.activityTypes || DEFAULT_ACTIVITY_TYPES);
+      setActivityTypes(resolvedTypes);
+      appMemoryCache.activityTypes = resolvedTypes;
 
       // Fetch locations
       const { data: locsData } = await supabase
@@ -36,11 +41,10 @@ export function useSettings() {
         .select("*")
         .order("name", { ascending: true });
 
-      if (locsData && locsData.length > 0) {
-        setLocations(locsData);
-      } else {
-        setLocations(DEFAULT_LOCATIONS);
-      }
+      const resolvedLocs = (locsData && locsData.length > 0) ? locsData : (appMemoryCache.locations || DEFAULT_LOCATIONS);
+      setLocations(resolvedLocs);
+      appMemoryCache.locations = resolvedLocs;
+      appMemoryCache.hasLoadedSettings = true;
     } catch (err) {
       console.error("Error fetching configuration:", err);
     } finally {
