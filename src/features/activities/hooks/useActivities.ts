@@ -147,9 +147,15 @@ export function useActivities() {
             created_at: nowIso,
           });
           await updatePendingCount();
-        } else if (data && onExpenseTrigger && activityType.is_expense_trigger) {
-          // Trigger inline expense callback if applicable
-          onExpenseTrigger(data.id, activeTrip?.reimbursable || false);
+        } else if (data) {
+          setTodayLogs((prev) => {
+            const next = prev.map((l) => (l.id === tempId ? data : l));
+            appMemoryCache.todayLogs = next;
+            return next;
+          });
+          if (onExpenseTrigger && activityType.is_expense_trigger) {
+            onExpenseTrigger(data.id, activeTrip?.reimbursable || false);
+          }
         }
       } catch (err) {
         console.error("Failed to log activity to Supabase:", err);
@@ -203,13 +209,25 @@ export function useActivities() {
     } else {
       try {
         const supabase = getSupabaseBrowserClient();
-        await supabase.from("activity_logs").insert({
-          user_id: "demo-user",
-          activity_type_id: endTypeId,
-          logged_at: nowIso,
-          notes: notes || null,
-          trip_id: activeTrip ? activeTrip.id : null,
-        });
+        const { data } = await supabase
+          .from("activity_logs")
+          .insert({
+            user_id: "demo-user",
+            activity_type_id: endTypeId,
+            logged_at: nowIso,
+            notes: notes || null,
+            trip_id: activeTrip ? activeTrip.id : null,
+          })
+          .select()
+          .single();
+
+        if (data) {
+          setTodayLogs((prev) => {
+            const next = prev.map((l) => (l.id === tempId ? data : l));
+            appMemoryCache.todayLogs = next;
+            return next;
+          });
+        }
       } catch (err) {
         console.error("Failed to insert end log:", err);
       }

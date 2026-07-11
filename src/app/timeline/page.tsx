@@ -8,7 +8,7 @@ import { getTodayIST, formatDuration } from "@/lib/utils";
 import { Calendar as CalendarIcon, Clock, RotateCcw } from "lucide-react";
 
 export default function TimelinePage() {
-  const { selectedDate, setSelectedDate, logs, activityTypes, trips, loading, updateNote, deleteLog } = useTimeline();
+  const { selectedDate, setSelectedDate, logs, activityTypes, trips, loading, updateNote, updateLogMapping, deleteLog } = useTimeline();
 
   const handleJumpToday = () => {
     setSelectedDate(getTodayIST());
@@ -111,9 +111,11 @@ export default function TimelinePage() {
                   <TimelineEntry
                     log={log}
                     activityType={actType}
+                    allActivityTypes={activityTypes}
                     linkedTrip={linkedTrip}
                     durationFromPrevious={durationFromPrevious}
                     onUpdateNote={(id, note) => updateNote(id, note)}
+                    onUpdateMapping={(id, typeId, iso, note) => updateLogMapping(id, typeId, iso, note)}
                     onDeleteLog={(id) => deleteLog(id)}
                   />
                 </React.Fragment>

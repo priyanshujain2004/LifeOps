@@ -186,7 +186,11 @@ export function useExpenses() {
           .single();
 
         if (data) {
-          setExpenses((prev) => prev.map((e) => (e.id === tempId ? data : e)));
+          setExpenses((prev) => {
+            const next = prev.map((e) => (e.id === tempId ? data : e));
+            appMemoryCache.expenses = next;
+            return next;
+          });
         }
       } catch (err) {
         console.error("Failed to insert expense to server:", err);
@@ -194,8 +198,55 @@ export function useExpenses() {
     }
   };
 
+  const editExpense = async (
+    id: string,
+    category: ExpenseCategory,
+    amount: number,
+    description: string,
+    reimbursable: boolean,
+    tripId?: string | null
+  ) => {
+    setExpenses((prev) => {
+      const next = prev.map((e) =>
+        e.id === id
+          ? {
+              ...e,
+              category,
+              amount,
+              description: description || null,
+              reimbursable,
+              trip_id: tripId || null,
+            }
+          : e
+      );
+      appMemoryCache.expenses = next;
+      return next;
+    });
+    toast.success("Expense updated");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await supabase
+        .from("expenses")
+        .update({
+          category,
+          amount,
+          description: description || null,
+          reimbursable,
+          trip_id: tripId || null,
+        })
+        .eq("id", id);
+    } catch (err) {
+      console.error("Failed to update expense:", err);
+    }
+  };
+
   const deleteExpense = async (id: string) => {
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
+    setExpenses((prev) => {
+      const next = prev.filter((e) => e.id !== id);
+      appMemoryCache.expenses = next;
+      return next;
+    });
     toast.success("Expense deleted");
     try {
       const supabase = getSupabaseBrowserClient();
@@ -211,6 +262,7 @@ export function useExpenses() {
     loading,
     monthlySummary,
     addExpense,
+    editExpense,
     deleteExpense,
     refresh: fetchExpensesAndTrips,
   };

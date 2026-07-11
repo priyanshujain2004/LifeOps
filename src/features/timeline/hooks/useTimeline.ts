@@ -88,10 +88,19 @@ export function useTimeline(initialDate?: string) {
     fetchTimeline();
   }, [fetchTimeline]);
 
+  const syncTimelineCache = (nextLogs: ActivityLog[]) => {
+    appMemoryCache.timelineLogsByDate[selectedDate] = nextLogs;
+    if (selectedDate === getTodayIST()) {
+      appMemoryCache.todayLogs = [...nextLogs].reverse();
+    }
+  };
+
   const updateNote = async (logId: string, newNote: string) => {
-    setLogs((prev) =>
-      prev.map((l) => (l.id === logId ? { ...l, notes: newNote || null } : l))
-    );
+    setLogs((prev) => {
+      const next = prev.map((l) => (l.id === logId ? { ...l, notes: newNote || null } : l));
+      syncTimelineCache(next);
+      return next;
+    });
     toast.success("Note updated");
 
     try {
@@ -105,8 +114,49 @@ export function useTimeline(initialDate?: string) {
     }
   };
 
+  const updateLogMapping = async (
+    logId: string,
+    activityTypeId: string,
+    loggedAtIso?: string,
+    newNote?: string | null
+  ) => {
+    setLogs((prev) => {
+      const next = prev.map((l) =>
+        l.id === logId
+          ? {
+              ...l,
+              activity_type_id: activityTypeId,
+              logged_at: loggedAtIso || l.logged_at,
+              notes: newNote !== undefined ? newNote : l.notes,
+            }
+          : l
+      );
+      syncTimelineCache(next);
+      return next;
+    });
+    toast.success("Activity mapping updated");
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await supabase
+        .from("activity_logs")
+        .update({
+          activity_type_id: activityTypeId,
+          ...(loggedAtIso ? { logged_at: loggedAtIso } : {}),
+          ...(newNote !== undefined ? { notes: newNote } : {}),
+        })
+        .eq("id", logId);
+    } catch (err) {
+      console.error("Error updating log mapping:", err);
+    }
+  };
+
   const deleteLog = async (logId: string) => {
-    setLogs((prev) => prev.filter((l) => l.id !== logId));
+    setLogs((prev) => {
+      const next = prev.filter((l) => l.id !== logId);
+      syncTimelineCache(next);
+      return next;
+    });
     toast.success("Log entry deleted");
 
     try {
@@ -125,6 +175,7 @@ export function useTimeline(initialDate?: string) {
     trips,
     loading,
     updateNote,
+    updateLogMapping,
     deleteLog,
     refresh: fetchTimeline,
   };

@@ -4,29 +4,47 @@ import React, { useState } from "react";
 import type { ActivityLog, ActivityType } from "@/features/activities/types";
 import type { TripRow } from "@/features/trips/types";
 import { formatIST } from "@/lib/utils";
-import { Edit3, Trash2, Navigation, CheckCircle2, Lock, X, Check } from "lucide-react";
+import { Edit3, Trash2, Navigation, CheckCircle2, Lock, X, Check, Sliders } from "lucide-react";
 import Link from "next/link";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 interface TimelineEntryProps {
   log: ActivityLog;
   activityType?: ActivityType;
+  allActivityTypes?: ActivityType[];
   linkedTrip?: TripRow;
   durationFromPrevious?: string | null;
   onUpdateNote: (id: string, note: string) => void;
+  onUpdateMapping?: (id: string, activityTypeId: string, loggedAtIso?: string, newNote?: string | null) => void;
   onDeleteLog: (id: string) => void;
 }
 
 export function TimelineEntry({
   log,
   activityType,
+  allActivityTypes = [],
   linkedTrip,
   durationFromPrevious,
   onUpdateNote,
+  onUpdateMapping,
   onDeleteLog,
 }: TimelineEntryProps) {
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [noteText, setNoteText] = useState(log.notes || "");
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [isEditingMapping, setIsEditingMapping] = useState(false);
+  const [selectedTypeId, setSelectedTypeId] = useState(log.activity_type_id);
+  const [editLoggedAtTime, setEditLoggedAtTime] = useState(() => {
+    try {
+      const d = new Date(log.logged_at);
+      // format as HH:mm for time input
+      const hours = String(d.getHours()).padStart(2, "0");
+      const mins = String(d.getMinutes()).padStart(2, "0");
+      return `${hours}:${mins}`;
+    } catch {
+      return "12:00";
+    }
+  });
 
   const hex = activityType?.color || "#6366F1";
   const icon = activityType?.icon || "⚡";
@@ -36,6 +54,21 @@ export function TimelineEntry({
     e.preventDefault();
     onUpdateNote(log.id, noteText.trim());
     setIsEditingNote(false);
+  };
+
+  const handleSaveMapping = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onUpdateMapping) return;
+    try {
+      const origDate = new Date(log.logged_at);
+      const [hh, mm] = editLoggedAtTime.split(":").map(Number);
+      origDate.setHours(hh || 0, mm || 0, 0, 0);
+      onUpdateMapping(log.id, selectedTypeId, origDate.toISOString(), noteText.trim() || null);
+      setIsEditingMapping(false);
+    } catch {
+      onUpdateMapping(log.id, selectedTypeId, undefined, noteText.trim() || null);
+      setIsEditingMapping(false);
+    }
   };
 
   return (
@@ -136,6 +169,16 @@ export function TimelineEntry({
                 <Edit3 className="w-3.5 h-3.5" />
               </button>
 
+              {onUpdateMapping && (
+                <button
+                  onClick={() => setIsEditingMapping(true)}
+                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors"
+                  title="Remap Activity & Adjust Time"
+                >
+                  <Sliders className="w-3.5 h-3.5" />
+                </button>
+              )}
+
               {showConfirmDelete ? (
                 <div className="flex items-center gap-1 bg-red-100 dark:bg-red-950/80 p-1 rounded-lg border border-red-500/40">
                   <span className="text-[10px] text-red-600 dark:text-red-300 font-bold px-1">Delete?</span>
@@ -165,6 +208,83 @@ export function TimelineEntry({
           </div>
         </div>
       </div>
+
+      {/* Edit Activity Mapping & Timestamp Modal */}
+      {isEditingMapping && (
+        <ModalPortal isOpen={isEditingMapping} onClose={() => setIsEditingMapping(false)}>
+          <div className="relative max-w-md w-full rounded-3xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-2xl animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+              <h4 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Remap Activity & Adjust Timestamp</span>
+              </h4>
+              <button onClick={() => setIsEditingMapping(false)} className="p-1 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveMapping} className="space-y-4 text-left">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                  Activity Button Mapping
+                </label>
+                <select
+                  value={selectedTypeId}
+                  onChange={(e) => setSelectedTypeId(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold text-sm focus:outline-none focus:border-indigo-500"
+                >
+                  {allActivityTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.icon} {type.name} ({type.category})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                  Logged Time (24h format HH:mm)
+                </label>
+                <input
+                  type="time"
+                  value={editLoggedAtTime}
+                  onChange={(e) => setEditLoggedAtTime(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-bold text-sm focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                  Notes / Context
+                </label>
+                <input
+                  type="text"
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  placeholder="Activity notes..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium text-sm focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingMapping(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition-transform active:scale-95"
+                >
+                  Save Remapped Activity
+                </button>
+              </div>
+            </form>
+          </div>
+        </ModalPortal>
+      )}
     </div>
   );
 }

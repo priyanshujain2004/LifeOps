@@ -80,10 +80,18 @@ export function useSettings() {
     };
 
     if (isNew) {
-      setActivityTypes((prev) => [...prev, record]);
+      setActivityTypes((prev) => {
+        const next = [...prev, record];
+        appMemoryCache.activityTypes = next;
+        return next;
+      });
       toast.success(`Created Activity: ${record.name}`);
     } else {
-      setActivityTypes((prev) => prev.map((t) => (t.id === record.id ? record : t)));
+      setActivityTypes((prev) => {
+        const next = prev.map((t) => (t.id === record.id ? record : t));
+        appMemoryCache.activityTypes = next;
+        return next;
+      });
       toast.success(`Updated Activity: ${record.name}`);
     }
 
@@ -110,7 +118,11 @@ export function useSettings() {
           .single();
 
         if (data) {
-          setActivityTypes((prev) => prev.map((t) => (t.id === tempId ? data : t)));
+          setActivityTypes((prev) => {
+            const next = prev.map((t) => (t.id === tempId ? data : t));
+            appMemoryCache.activityTypes = next;
+            return next;
+          });
         }
       } else {
         await supabase
@@ -136,7 +148,11 @@ export function useSettings() {
   };
 
   const deleteActivityType = async (id: string) => {
-    setActivityTypes((prev) => prev.filter((t) => t.id !== id));
+    setActivityTypes((prev) => {
+      const next = prev.filter((t) => t.id !== id);
+      appMemoryCache.activityTypes = next;
+      return next;
+    });
     toast.success("Activity button deleted");
     try {
       const supabase = getSupabaseBrowserClient();
@@ -160,6 +176,7 @@ export function useSettings() {
     // Update sort_order numbers
     const updatedArr = newArr.map((t, i) => ({ ...t, sort_order: i + 1 }));
     setActivityTypes(updatedArr);
+    appMemoryCache.activityTypes = updatedArr;
 
     try {
       const supabase = getSupabaseBrowserClient();
@@ -190,10 +207,18 @@ export function useSettings() {
     };
 
     if (isNew) {
-      setLocations((prev) => [...prev, record]);
+      setLocations((prev) => {
+        const next = [...prev, record];
+        appMemoryCache.locations = next;
+        return next;
+      });
       toast.success(`Created Location: ${record.name}`);
     } else {
-      setLocations((prev) => prev.map((l) => (l.id === record.id ? record : l)));
+      setLocations((prev) => {
+        const next = prev.map((l) => (l.id === record.id ? record : l));
+        appMemoryCache.locations = next;
+        return next;
+      });
       toast.success(`Updated Location: ${record.name}`);
     }
 
@@ -206,7 +231,11 @@ export function useSettings() {
           .select()
           .single();
         if (data) {
-          setLocations((prev) => prev.map((l) => (l.id === tempId ? data : l)));
+          setLocations((prev) => {
+            const next = prev.map((l) => (l.id === tempId ? data : l));
+            appMemoryCache.locations = next;
+            return next;
+          });
         }
       } else {
         await supabase
@@ -220,7 +249,11 @@ export function useSettings() {
   };
 
   const deleteLocation = async (id: string) => {
-    setLocations((prev) => prev.filter((l) => l.id !== id));
+    setLocations((prev) => {
+      const next = prev.filter((l) => l.id !== id);
+      appMemoryCache.locations = next;
+      return next;
+    });
     toast.success("Location deleted");
     try {
       const supabase = getSupabaseBrowserClient();

@@ -12,7 +12,7 @@ function ExpensesContent() {
   const defaultTripId = searchParams?.get("trip_id") || null;
   const defaultReimb = searchParams?.get("reimbursable") ? searchParams.get("reimbursable") === "true" : undefined;
 
-  const { expenses, trips, loading, monthlySummary, addExpense, deleteExpense } = useExpenses();
+  const { expenses, trips, loading, monthlySummary, addExpense, editExpense, deleteExpense } = useExpenses();
   const [isAddModalOpen, setIsAddModalOpen] = useState(!!defaultTripId);
   const [filter, setFilter] = useState<"ALL" | "REIMBURSABLE" | "PERSONAL">("ALL");
 
@@ -118,7 +118,12 @@ function ExpensesContent() {
             ))}
           </div>
         ) : (
-          <ExpenseList expenses={filteredExpenses} onDeleteExpense={(id) => deleteExpense(id)} />
+          <ExpenseList
+            expenses={filteredExpenses}
+            trips={trips}
+            onEditExpense={editExpense}
+            onDeleteExpense={(id) => deleteExpense(id)}
+          />
         )}
       </div>
 
