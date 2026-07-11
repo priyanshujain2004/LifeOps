@@ -3,77 +3,90 @@ import { DEFAULT_ACTIVITY_TYPES } from "@/features/activities/types/seedDefaults
 import { DEFAULT_LOCATIONS } from "@/features/trips/types/seedLocations";
 
 let isSeedingInProgress = false;
-let hasCheckedAndSeeded = false;
 
 export async function ensureDatabaseSeeded(userId?: string) {
-  if (!userId || userId === "demo" || hasCheckedAndSeeded || isSeedingInProgress) return;
+  if (!userId || userId === "demo" || isSeedingInProgress) return;
+
+  // 1. Check local persistent flag: if we have checked or seeded this user before on this device, NEVER seed on refresh
+  const storageKey = `lifelog_seeded_${userId}`;
+  if (typeof window !== "undefined" && localStorage.getItem(storageKey) === "true") {
+    return;
+  }
+
   isSeedingInProgress = true;
 
   try {
     const supabase = getSupabaseBrowserClient();
 
-    // 1. Check if activity_types exist for this user in DB
+    // 2. Check if activity_types exist for this user in DB
     const { data: existingTypes, error: typesCheckErr } = await supabase
       .from("activity_types")
       .select("id")
       .eq("user_id", userId)
       .limit(1);
 
-    if (!typesCheckErr && (!existingTypes || existingTypes.length === 0)) {
-      console.log(`[Seeder] No activity_types in DB for user "${userId}". Auto-seeding 30+ default activity buttons directly into Supabase table...`);
-
-      const typesToInsert = DEFAULT_ACTIVITY_TYPES.map((t) => ({
-        user_id: userId,
-        name: t.name,
-        category: t.category,
-        is_paired: t.is_paired,
-        pair_label: t.pair_label,
-        is_expense_trigger: t.is_expense_trigger,
-        expense_reimbursable_rule: t.expense_reimbursable_rule,
-        reimbursable_conditions: t.reimbursable_conditions,
-        icon: t.icon,
-        color: t.color,
-        sort_order: t.sort_order,
-        active: t.active,
-      }));
-
-      const { error: insertTypesErr } = await supabase.from("activity_types").insert(typesToInsert);
-      if (insertTypesErr) {
-        console.error("[Seeder] Error auto-seeding activity_types to Supabase table:", insertTypesErr);
-      } else {
-        console.log(`[Seeder] Successfully seeded ${typesToInsert.length} rows into database table activity_types!`);
-      }
-    }
-
-    // 2. Check if locations exist for this user in DB
+    // 3. Check if locations exist for this user in DB
     const { data: existingLocs, error: locsCheckErr } = await supabase
       .from("locations")
       .select("id")
       .eq("user_id", userId)
       .limit(1);
 
-    if (!locsCheckErr && (!existingLocs || existingLocs.length === 0)) {
-      console.log(`[Seeder] No locations in DB for user "${userId}". Auto-seeding default locations directly into Supabase table...`);
+    const hasAnyExistingData = 
+      (!typesCheckErr && existingTypes && existingTypes.length > 0) ||
+      (!locsCheckErr && existingLocs && existingLocs.length > 0);
 
-      const locsToInsert = DEFAULT_LOCATIONS.map((l) => ({
-        user_id: userId,
-        name: l.name,
-        type: l.type,
-        address: l.address,
-        active: l.active,
-      }));
-
-      const { error: insertLocsErr } = await supabase.from("locations").insert(locsToInsert);
-      if (insertLocsErr) {
-        console.error("[Seeder] Error auto-seeding locations to Supabase table:", insertLocsErr);
-      } else {
-        console.log(`[Seeder] Successfully seeded ${locsToInsert.length} rows into database table locations!`);
+    // If the user already has any data (or had data created by the DB trigger upon signup), mark seeded in localStorage and return
+    if (hasAnyExistingData) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(storageKey, "true");
       }
+      return;
     }
 
-    hasCheckedAndSeeded = true;
+    // 4. Only if 100% empty across the database on very first check (e.g. brand new account before DB trigger completed), seed defaults ONCE
+    console.log(`[Seeder] First-time login verified for "${userId}". Auto-seeding initial defaults...`);
+
+    const typesToInsert = DEFAULT_ACTIVITY_TYPES.map((t) => ({
+      user_id: userId,
+      name: t.name,
+      category: t.category,
+      is_paired: t.is_paired,
+      pair_label: t.pair_label,
+      is_expense_trigger: t.is_expense_trigger,
+      expense_reimbursable_rule: t.expense_reimbursable_rule,
+      reimbursable_conditions: t.reimbursable_conditions,
+      icon: t.icon,
+      color: t.color,
+      sort_order: t.sort_order,
+      active: t.active,
+    }));
+
+    const locsToInsert = DEFAULT_LOCATIONS.map((l) => ({
+      user_id: userId,
+      name: l.name,
+      type: l.type,
+      address: l.address,
+      active: l.active,
+    }));
+
+    const [{ error: typesErr }, { error: locsErr }] = await Promise.all([
+      supabase.from("activity_types").insert(typesToInsert),
+      supabase.from("locations").insert(locsToInsert),
+    ]);
+
+    if (typesErr || locsErr) {
+      console.error("[Seeder] Error auto-seeding initial defaults:", { typesErr, locsErr });
+    } else {
+      console.log(`[Seeder] Successfully seeded initial defaults for new user "${userId}"!`);
+    }
+
+    // Mark permanently seeded across sessions so refresh or future logins NEVER recreate deleted defaults
+    if (typeof window !== "undefined") {
+      localStorage.setItem(storageKey, "true");
+    }
   } catch (err) {
-    console.error("[Seeder] Fatal error during database verification and auto-seeding:", err);
+    console.error("[Seeder] Fatal error during first-time database verification:", err);
   } finally {
     isSeedingInProgress = false;
   }

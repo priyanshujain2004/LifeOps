@@ -6,11 +6,11 @@ import { useAppStore } from "@/store/useAppStore";
 import { useTheme } from "./ThemeProvider";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { Moon, Sun, Wifi, WifiOff, RefreshCw, Activity } from "lucide-react";
+import { Moon, Sun, Wifi, WifiOff, RefreshCw, Activity, LogOut } from "lucide-react";
 
 export function Header() {
   const pathname = usePathname();
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [currentIST, setCurrentIST] = useState<string>("");
   const { isOffline, setIsOffline, pendingQueueCount, isSyncing, triggerSync, updatePendingCount } = useAppStore();
   const { theme, toggleTheme } = useTheme();
@@ -63,7 +63,7 @@ export function Header() {
           </div>
         </div>
 
-        {/* Sync & Network Badge + Theme Toggle */}
+        {/* Sync & Network Badge + Theme Toggle & Log Out */}
         <div className="flex items-center gap-2">
           {/* Offline/Online status & queue counter */}
           {isOffline ? (
@@ -102,6 +102,18 @@ export function Header() {
           >
             {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
           </button>
+
+          {/* Log Out Button */}
+          {user && (
+            <button
+              onClick={() => signOut()}
+              title="Sign out of LifeLog"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold transition-all shadow-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Log Out</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

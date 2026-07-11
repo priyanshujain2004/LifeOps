@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 interface SelectableUser {
   id: string;
-  email?: string;
+  email?: string | null;
   label: string;
 }
 
@@ -28,7 +28,25 @@ export function SuperAdminBanner() {
       setLoadingUsers(true);
       try {
         const supabase = getSupabaseBrowserClient();
-        // Collect distinct user IDs across user_roles, activity_logs, and trips
+        
+        // Query profiles table for richest user metadata
+        const { data: profilesData } = await supabase.from("profiles").select("id, email, full_name").limit(200);
+
+        if (profilesData && profilesData.length > 0) {
+          const userList: SelectableUser[] = profilesData.map((p) => {
+            const isSelf = p.id === user.id;
+            const displayName = p.full_name ? `${p.full_name} (${p.email || p.id.slice(0, 8)})` : p.email || `User ${p.id.slice(0, 8)}`;
+            return {
+              id: p.id,
+              email: p.email,
+              label: isSelf ? `${displayName} [SUPERADMIN - SELF]` : displayName,
+            };
+          });
+          setSelectableUsers(userList);
+          return;
+        }
+
+        // Fallback if profiles table not seeded yet
         const [{ data: rolesData }, { data: logsData }, { data: tripsData }] = await Promise.all([
           supabase.from("user_roles").select("user_id, role").limit(100),
           supabase.from("activity_logs").select("user_id").limit(100),
