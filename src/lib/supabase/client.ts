@@ -37,6 +37,9 @@ let browserClientInstance: ReturnType<typeof createBrowserClient<Database>> | nu
 
 export function getSupabaseBrowserClient() {
   if (!browserClientInstance) {
+    if (typeof window !== "undefined" && (supabaseAnonKey.includes("placeholder") || !supabaseAnonKey || supabaseAnonKey.length < 30)) {
+      console.error("[LifeLog Supabase Config] CRITICAL: NEXT_PUBLIC_SUPABASE_ANON_KEY is missing or unpopulated in your Production Environment Variables!");
+    }
     const options = isPlaceholder 
       ? { global: { fetch: customFetch } }
       : {};

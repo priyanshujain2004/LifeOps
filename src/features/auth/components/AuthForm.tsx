@@ -19,6 +19,13 @@ export function AuthForm() {
     setLoading(true);
 
     try {
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+      if (!anonKey || anonKey.includes("placeholder") || anonKey.length < 30) {
+        toast.error("Production Error: NEXT_PUBLIC_SUPABASE_ANON_KEY is missing inside Vercel Project Environment Variables! Add it and Redeploy.");
+        setLoading(false);
+        return;
+      }
+
       const supabase = getSupabaseBrowserClient();
 
       if (mode === "MAGIC") {
