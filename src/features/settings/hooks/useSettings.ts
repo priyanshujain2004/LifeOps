@@ -1,0 +1,279 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { ActivityType } from "@/features/activities/types";
+import { DEFAULT_ACTIVITY_TYPES } from "@/features/activities/types/seedDefaults";
+import type { LocationRow } from "@/features/trips/types";
+import { DEFAULT_LOCATIONS } from "@/features/trips/types/seedLocations";
+import { toast } from "sonner";
+
+export function useSettings() {
+  const [activityTypes, setActivityTypes] = useState<ActivityType[]>(DEFAULT_ACTIVITY_TYPES);
+  const [locations, setLocations] = useState<LocationRow[]>(DEFAULT_LOCATIONS);
+  const [loading, setLoading] = useState(true);
+
+  const fetchConfig = useCallback(async () => {
+    setLoading(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+
+      // Fetch activity types
+      const { data: typesData } = await supabase
+        .from("activity_types")
+        .select("*")
+        .order("sort_order", { ascending: true });
+
+      if (typesData && typesData.length > 0) {
+        setActivityTypes(typesData);
+      } else {
+        setActivityTypes(DEFAULT_ACTIVITY_TYPES);
+      }
+
+      // Fetch locations
+      const { data: locsData } = await supabase
+        .from("locations")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (locsData && locsData.length > 0) {
+        setLocations(locsData);
+      } else {
+        setLocations(DEFAULT_LOCATIONS);
+      }
+    } catch (err) {
+      console.error("Error fetching configuration:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
+
+  // Activity Types CRUD
+  const saveActivityType = async (type: Partial<ActivityType> & { name: string; category: any }) => {
+    const isNew = !type.id || type.id.startsWith("new-");
+    const tempId = isNew ? `custom-${Date.now()}` : type.id!;
+    const nowIso = new Date().toISOString();
+
+    const record: ActivityType = {
+      id: tempId,
+      user_id: "current-user",
+      name: type.name,
+      category: type.category,
+      is_paired: type.is_paired ?? false,
+      pair_label: type.pair_label || null,
+      is_expense_trigger: type.is_expense_trigger ?? false,
+      expense_reimbursable_rule: type.expense_reimbursable_rule || "NEVER",
+      reimbursable_conditions: type.reimbursable_conditions || {},
+      icon: type.icon || "⚡",
+      color: type.color || "#6366F1",
+      sort_order: type.sort_order ?? activityTypes.length + 1,
+      active: type.active ?? true,
+      created_at: type.created_at || nowIso,
+    };
+
+    if (isNew) {
+      setActivityTypes((prev) => [...prev, record]);
+      toast.success(`Created Activity: ${record.name}`);
+    } else {
+      setActivityTypes((prev) => prev.map((t) => (t.id === record.id ? record : t)));
+      toast.success(`Updated Activity: ${record.name}`);
+    }
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      if (isNew) {
+        const { data } = await supabase
+          .from("activity_types")
+          .insert({
+            user_id: "demo-user",
+            name: record.name,
+            category: record.category,
+            is_paired: record.is_paired,
+            pair_label: record.pair_label,
+            is_expense_trigger: record.is_expense_trigger,
+            expense_reimbursable_rule: record.expense_reimbursable_rule,
+            reimbursable_conditions: record.reimbursable_conditions,
+            icon: record.icon,
+            color: record.color,
+            sort_order: record.sort_order,
+            active: record.active,
+          })
+          .select()
+          .single();
+
+        if (data) {
+          setActivityTypes((prev) => prev.map((t) => (t.id === tempId ? data : t)));
+        }
+      } else {
+        await supabase
+          .from("activity_types")
+          .update({
+            name: record.name,
+            category: record.category,
+            is_paired: record.is_paired,
+            pair_label: record.pair_label,
+            is_expense_trigger: record.is_expense_trigger,
+            expense_reimbursable_rule: record.expense_reimbursable_rule,
+            reimbursable_conditions: record.reimbursable_conditions,
+            icon: record.icon,
+            color: record.color,
+            sort_order: record.sort_order,
+            active: record.active,
+          })
+          .eq("id", record.id);
+      }
+    } catch (err) {
+      console.error("Error saving activity type:", err);
+    }
+  };
+
+  const deleteActivityType = async (id: string) => {
+    setActivityTypes((prev) => prev.filter((t) => t.id !== id));
+    toast.success("Activity button deleted");
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await supabase.from("activity_types").delete().eq("id", id);
+    } catch (err) {
+      console.error("Error deleting activity type:", err);
+    }
+  };
+
+  const moveActivitySort = async (id: string, direction: "UP" | "DOWN") => {
+    const idx = activityTypes.findIndex((t) => t.id === id);
+    if (idx === -1) return;
+    const targetIdx = direction === "UP" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= activityTypes.length) return;
+
+    const newArr = [...activityTypes];
+    const temp = newArr[idx];
+    newArr[idx] = newArr[targetIdx];
+    newArr[targetIdx] = temp;
+
+    // Update sort_order numbers
+    const updatedArr = newArr.map((t, i) => ({ ...t, sort_order: i + 1 }));
+    setActivityTypes(updatedArr);
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await Promise.all(
+        updatedArr.map((t) =>
+          supabase.from("activity_types").update({ sort_order: t.sort_order }).eq("id", t.id)
+        )
+      );
+    } catch (err) {
+      console.error("Error reordering:", err);
+    }
+  };
+
+  // Locations CRUD
+  const saveLocation = async (loc: Partial<LocationRow> & { name: string; type: any }) => {
+    const isNew = !loc.id || loc.id.startsWith("new-");
+    const tempId = isNew ? `loc-${Date.now()}` : loc.id!;
+    const nowIso = new Date().toISOString();
+
+    const record: LocationRow = {
+      id: tempId,
+      user_id: "current-user",
+      name: loc.name,
+      type: loc.type,
+      address: loc.address || null,
+      active: loc.active ?? true,
+      created_at: loc.created_at || nowIso,
+    };
+
+    if (isNew) {
+      setLocations((prev) => [...prev, record]);
+      toast.success(`Created Location: ${record.name}`);
+    } else {
+      setLocations((prev) => prev.map((l) => (l.id === record.id ? record : l)));
+      toast.success(`Updated Location: ${record.name}`);
+    }
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      if (isNew) {
+        const { data } = await supabase
+          .from("locations")
+          .insert({ user_id: "demo-user", name: record.name, type: record.type, address: record.address, active: record.active })
+          .select()
+          .single();
+        if (data) {
+          setLocations((prev) => prev.map((l) => (l.id === tempId ? data : l)));
+        }
+      } else {
+        await supabase
+          .from("locations")
+          .update({ name: record.name, type: record.type, address: record.address, active: record.active })
+          .eq("id", record.id);
+      }
+    } catch (err) {
+      console.error("Error saving location:", err);
+    }
+  };
+
+  const deleteLocation = async (id: string) => {
+    setLocations((prev) => prev.filter((l) => l.id !== id));
+    toast.success("Location deleted");
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await supabase.from("locations").delete().eq("id", id);
+    } catch (err) {
+      console.error("Error deleting location:", err);
+    }
+  };
+
+  // Backup & Restore
+  const exportBackupJSON = () => {
+    const backup = {
+      version: "1.0.0",
+      timestamp: new Date().toISOString(),
+      activityTypes,
+      locations,
+    };
+    const jsonStr = JSON.stringify(backup, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `lifelog_backup_${Date.now()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Settings exported to JSON backup");
+  };
+
+  const importBackupJSON = async (file: File) => {
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (parsed.activityTypes && Array.isArray(parsed.activityTypes)) {
+        setActivityTypes(parsed.activityTypes);
+      }
+      if (parsed.locations && Array.isArray(parsed.locations)) {
+        setLocations(parsed.locations);
+      }
+      toast.success("Configuration restored successfully from backup file!");
+    } catch (err) {
+      toast.error("Invalid backup JSON file");
+      console.error(err);
+    }
+  };
+
+  return {
+    activityTypes,
+    locations,
+    loading,
+    saveActivityType,
+    deleteActivityType,
+    moveActivitySort,
+    saveLocation,
+    deleteLocation,
+    exportBackupJSON,
+    importBackupJSON,
+    refresh: fetchConfig,
+  };
+}

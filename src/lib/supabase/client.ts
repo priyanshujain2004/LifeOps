@@ -1,0 +1,10 @@
+import { createBrowserClient } from "@supabase/ssr";
+import type { Database } from "./types";
+
+// Provide safe defaults during local dev or UI build before env vars are populated
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder";
+
+export function getSupabaseBrowserClient() {
+  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+}
